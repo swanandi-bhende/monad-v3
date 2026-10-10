@@ -12,6 +12,7 @@ import type { TransactionErrorKind } from "@/types/transaction";
 type ClassifiedError = { kind: TransactionErrorKind; message: string };
 
 const REVERT_MESSAGES: Record<string, string> = {
+  ClaimTooSoon: "You already claimed test USDC in the last 24 hours. Try again later.",
   ReviewWindowNotOpen: "Reviews open once the submission deadline has passed.",
   SubmissionWindowOpen: "Winners can be selected after the submission deadline.",
   CreatorCannotReview: "The creator cannot review their own bounty.",

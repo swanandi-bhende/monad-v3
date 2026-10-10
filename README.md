@@ -80,15 +80,12 @@ The app is configured for this chain only. A wrong-network banner offers to swit
 
 ## 11. Contract addresses
 
-| Contract                                           | Address                                      | Verification          |
-| -------------------------------------------------- | -------------------------------------------- | --------------------- |
-| ProofBounty contract (escrow, 120 s review period) | `0x18B257eF370A2Cd9f600d874d00FEbbCcc25bAf0` | Sourcify: exact match |
-| SubmissionCredibility                              | `0x19b607De70fBB2a6c12Fa2c5697FC400fe48eC57` | Sourcify: exact match |
-| TestUSD (reward token, tUSD)                       | `0xCe233f627834e017097feFB53f4dfD2085A9B988` | Sourcify: exact match |
+| Contract                                     | Address                                      | Network               | Verification                                              |
+| -------------------------------------------- | -------------------------------------------- | --------------------- | --------------------------------------------------------- |
+| GigAChad (escrow, tiered fee, reviewer pool) | `0x05eDeEAC6f366073c0dE30a831306ACA816E9441` | Monad Testnet (10143) | Sourcify exact match. Monadscan verification not yet run. |
+| TestUSDC (test USDC, faucet)                 | `0x3f21FDdb6bF994275BCAc18db1042f02bf09632d` | Monad Testnet (10143) | Sourcify exact match.                                     |
 
-Check any address on [Monadscan](https://testnet.monadscan.com/address/0x18B257eF370A2Cd9f600d874d00FEbbCcc25bAf0).
-
-**Superseded deployments (do not use):** the earlier ProofBounty `0xEc238754ffb9a846Ba52718D0a78E72878747702` (one-hour review period) and its credibility contract `0xAB010c9Bfdc5513ecADC95f66AEc0C6070bF15F6` were replaced for demo timing. The app does not reference them. Bounties on those contracts are not shown.
+**Superseded (not used by the app):** ProofBounty `0x18B257eF370A2Cd9f600d874d00FEbbCcc25bAf0`, SubmissionCredibility `0x19b607De70fBB2a6c12Fa2c5697FC400fe48eC57`, TestUSD `0xCe233f627834e017097feFB53f4dfD2085A9B988`, and the earlier one-hour ProofBounty `0xEc238754ffb9a846Ba52718D0a78E72878747702`.
 
 ## 12. Live URL
 
@@ -108,9 +105,8 @@ Set these in `.env.local` (values are the deployed addresses above):
 
 ```
 NEXT_PUBLIC_MONAD_RPC_URL=https://testnet-rpc.monad.xyz
-NEXT_PUBLIC_PROOFBOUNTY_ADDRESS=0x18B257eF370A2Cd9f600d874d00FEbbCcc25bAf0
-NEXT_PUBLIC_CREDIBILITY_ADDRESS=0x19b607De70fBB2a6c12Fa2c5697FC400fe48eC57
-NEXT_PUBLIC_PROOFBOUNTY_DEPLOY_BLOCK=69793560
+NEXT_PUBLIC_GIGACHAD_ADDRESS=0x05eDeEAC6f366073c0dE30a831306ACA816E9441
+NEXT_PUBLIC_GIGACHAD_DEPLOY_BLOCK=69814782
 ```
 
 Contract tests and deployment:

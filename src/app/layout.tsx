@@ -28,6 +28,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <meta name="color-scheme" content="light" />
+        <meta name="darkreader-lock" />
+      </head>
       <body suppressHydrationWarning className="flex min-h-full flex-col">
         <Providers>
           <Header />

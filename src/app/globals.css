@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #fdf8f8;
+  --color-canvas: #f2eae3;
   --color-surface: #ffffffb3;
   --color-surface-raised: #f1edec;
   --color-line: #c7c6ca;

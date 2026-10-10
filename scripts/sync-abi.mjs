@@ -14,7 +14,7 @@ try {
   process.exit(1);
 }
 
-const target = join(root, "src", "constants", "abi.ts");
+const target = join(root, "src", "lib", "contracts", "abi.ts");
 mkdirSync(dirname(target), { recursive: true });
 writeFileSync(
   target,

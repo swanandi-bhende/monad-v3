@@ -39,6 +39,7 @@ contracts/out/
 contracts/cache/
 contracts/broadcast/
 contracts/coverage/
+contracts/lib/
 
 # editors
 .vscode/
@@ -50,6 +51,9 @@ contracts/coverage/
 
 # vercel
 .vercel
+
+# claude local settings
+.claude/settings.local.json
 
 # typescript
 *.tsbuildinfo

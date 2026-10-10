@@ -8,3 +8,4 @@ contracts/cache
 contracts/lib
 package-lock.json
 next-env.d.ts
+src/lib/contracts/abi.ts

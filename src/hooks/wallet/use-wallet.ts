@@ -1,5 +1,5 @@
 import { useAccount, useConnect, useDisconnect, useSwitchChain } from "wagmi";
-import { MONAD_TESTNET } from "@/constants/network";
+import { MONAD_TESTNET } from "@/lib/config/chain";
 
 export function useWallet() {
   const { address, chainId, isConnected } = useAccount();

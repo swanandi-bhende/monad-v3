@@ -6,6 +6,7 @@ test = "test"
 script = "script"
 solc = "0.8.28"
 chain_id = 10143
+remappings = ["@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/"]
 
 [rpc_endpoints]
 monad_testnet = "${MONAD_TESTNET_RPC_URL}"

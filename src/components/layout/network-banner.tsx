@@ -1,6 +1,6 @@
 "use client";
 
-import { MONAD_TESTNET } from "@/constants/network";
+import { MONAD_TESTNET } from "@/lib/config/chain";
 import { useWallet } from "@/hooks/wallet/use-wallet";
 
 export function NetworkBanner() {

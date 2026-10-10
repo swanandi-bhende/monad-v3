@@ -89,7 +89,7 @@ The app is configured for this chain only. A wrong-network banner offers to swit
 
 ## 12. Live URL
 
-https://monad-v3-anvv4hx20-swanandi-bhendes-projects.vercel.app
+̉[https://monad-v3-nvrawtq21-swanandi-bhendes-projects.vercel.app/](https://monad-v3-nvrawtq21-swanandi-bhendes-projects.vercel.app/)
 
 ## 13. How to run locally
 

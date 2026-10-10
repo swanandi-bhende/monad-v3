@@ -13,11 +13,12 @@ Submission for Monad Blitz Pune V3 (2026). This project runs on **Monad Testnet*
 3. **Select.** The creator picks a winner while the bounty is open and before the review period ends. The contract checks the caller and the submission, marks the bounty completed, and transfers the escrowed reward to the winner.
 4. **Refund.** If nothing is selected by `deadline + review period`, the creator can reclaim the reward. Completed and refunded bounties cannot be settled again.
 
-Community credibility is secondary and is not part of the contract. Work history comes from completed bounties.
+Community credibility is a separate, secondary signal. Any wallet except the submitter can mark a submission **credible** or **low quality**, once per wallet, stored on-chain in `SubmissionCredibility`. Credibility never changes who gets paid and is never used to lower anyone's reputation. Reputation counts only on-chain outcomes: bounties won, completed bounties, and rewards paid.
 
 ## How blockchain is used
 
 - **Escrow.** The reward is transferred into the contract when the bounty is created.
+- **Credibility signals.** Stored in their own contract, so the escrow contract is never changed to add them.
 - **Enforced deadlines.** Late submissions are rejected by the contract, not just hidden by the UI.
 - **Direct payout.** The winner receives the reward in the same transaction that selects them.
 - **Verifiable history.** Every create, submit, select, and refund emits an event that can be checked on the explorer.
@@ -33,9 +34,16 @@ Bounties, submissions, and payouts are many small, independent transactions. Mon
 The repository has two independent workspaces:
 
 - **Frontend** (repo root): Next.js App Router app in `src/`. It reads chain state and sends transactions through wagmi and viem.
-- **Contracts** (`contracts/`): Foundry workspace with `ProofBounty.sol`, its tests, and its deploy script. It uses OpenZeppelin for `SafeERC20` and `ReentrancyGuard`.
+- **Contracts** (`contracts/`): Foundry workspace. `ProofBounty.sol` holds the escrow lifecycle. `SubmissionCredibility.sol` stores credibility signals and reads submissions from `ProofBounty`. `TestUSD.sol` is the test reward token. It uses OpenZeppelin for `SafeERC20` and `ReentrancyGuard`.
 
-The frontend consumes the contract ABI through `npm run abi:sync`, which copies the compiled ABI from `contracts/out` into `src/lib/contracts/abi.ts`. The deployed address comes from the environment.
+The frontend consumes the contract ABIs through `npm run abi:sync`, which copies both compiled ABIs from `contracts/out` into `src/lib/contracts/abi.ts`. Contract addresses come from the environment.
+
+### Data sources
+
+There is no backend or indexer. The browser reads state directly from the contracts:
+
+- **Bounties and submissions** are read in one batched Multicall3 request and refreshed every 15 seconds.
+- **Activity, credibility counts, and settlement links** come from contract events. The browser scans the logs in 100-block ranges (the public RPC limit), starting at the deploy block, and caches them in `localStorage`. The first visit can take a minute or two. Later visits only fetch new blocks.
 
 ## Tech stack
 
@@ -54,21 +62,21 @@ The frontend consumes the contract ABI through `npm run abi:sync`, which copies 
 ```
 .
 ├── contracts/              Foundry workspace
-│   ├── src/                ProofBounty.sol
+│   ├── src/                ProofBounty.sol, SubmissionCredibility.sol, TestUSD.sol
 │   ├── test/               Foundry tests
-│   ├── script/             Deploy script
+│   ├── script/             Deploy scripts
 │   └── foundry.toml
 ├── scripts/                Repo tooling (ABI sync)
 ├── src/
-│   ├── app/                Routes: board, post, bounty/[id], profile, my-bounties
-│   ├── components/         ui, bounty, submission, forms, layout, providers
-│   ├── hooks/              wallet, bounty, submission, transaction
+│   ├── app/                Routes: board (/), post, bounty/[id], profile, my-bounties
+│   ├── components/         ui, bounty, submission, forms, activity, profile, layout
+│   ├── hooks/              wallet, bounty, activity, transaction
 │   ├── lib/
 │   │   ├── config/         chain, env validation, reward token
-│   │   ├── contracts/      generated ABI, contract address
-│   │   ├── blockchain/     wagmi config, read and write helpers, tx helpers
-│   │   └── utils/          formatting and validation
-│   ├── types/              Bounty, Submission, User, Reputation, TransactionState
+│   │   ├── contracts/      generated ABIs, contract addresses
+│   │   ├── blockchain/     wagmi config, reads, writes, event index, error classification
+│   │   └── utils/          formatting, credibility, activity, reputation
+│   ├── types/              Bounty, Submission, ChainEvent, TransactionState
 │   └── constants/          Bounty categories, selection methods, status labels
 └── docs/                   Product and hackathon notes
 ```
@@ -95,12 +103,14 @@ The header has a **Connect wallet** button. Once connected, it shows the wallet'
 
 Copy `.env.example` to `.env.local` for the frontend. Never commit real `.env` files.
 
-| Variable                          | Required     | Purpose                                                                         |
-| --------------------------------- | ------------ | ------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_MONAD_RPC_URL`       | No           | Monad Testnet RPC for the browser. Defaults to `https://testnet-rpc.monad.xyz`. |
-| `NEXT_PUBLIC_PROOFBOUNTY_ADDRESS` | After deploy | Deployed ProofBounty contract address (`0x…`).                                  |
-| `MONAD_TESTNET_RPC_URL`           | Deploy only  | RPC used by Foundry (`contracts/foundry.toml`).                                 |
-| `DEPLOYER_PRIVATE_KEY`            | Deploy only  | Deployer key, used by the deploy command. Never use the `NEXT_PUBLIC_` prefix.  |
+| Variable                               | Required     | Purpose                                                                         |
+| -------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_MONAD_RPC_URL`            | No           | Monad Testnet RPC for the browser. Defaults to `https://testnet-rpc.monad.xyz`. |
+| `NEXT_PUBLIC_PROOFBOUNTY_ADDRESS`      | After deploy | Deployed ProofBounty contract address (`0x…`).                                  |
+| `NEXT_PUBLIC_CREDIBILITY_ADDRESS`      | After deploy | Deployed SubmissionCredibility contract address (`0x…`).                        |
+| `NEXT_PUBLIC_PROOFBOUNTY_DEPLOY_BLOCK` | Recommended  | Block of the ProofBounty deploy. The activity index starts here.                |
+| `MONAD_TESTNET_RPC_URL`                | Deploy only  | RPC used by Foundry (`contracts/foundry.toml`).                                 |
+| `DEPLOYER_PRIVATE_KEY`                 | Deploy only  | Deployer key, used by the deploy command. Never use the `NEXT_PUBLIC_` prefix.  |
 
 `NEXT_PUBLIC_*` values are public and end up in the browser bundle. Deployment keys must never use that prefix.
 
@@ -151,6 +161,20 @@ npm run contracts:fmt    # forge fmt --check
 
 3. Copy the printed `ProofBounty deployed at` address and check it on [Monadscan](https://testnet.monadscan.com).
 
+### Deploy the credibility contract
+
+Run after ProofBounty is deployed. It takes the ProofBounty address from the environment:
+
+```bash
+cd contracts
+set -a && . ../.env && set +a
+PROOFBOUNTY_ADDRESS=$NEXT_PUBLIC_PROOFBOUNTY_ADDRESS forge script script/SubmissionCredibility.s.sol:DeploySubmissionCredibility \
+  --rpc-url "$MONAD_TESTNET_RPC_URL" --private-key "$DEPLOYER_PRIVATE_KEY" --broadcast
+cd ..
+```
+
+Then set `NEXT_PUBLIC_CREDIBILITY_ADDRESS` and run `npm run abi:sync`.
+
 ### Test reward token
 
 The reward is paid in `tUSD`, a 6-decimal test ERC-20 (`contracts/src/TestUSD.sol`). Deploy it once, then mint to any wallet with `mint(address,uint256)`. The deployer receives 1,000 tUSD on deploy:
@@ -164,7 +188,7 @@ cd ..
 
 ### Connect the deployed contract to the frontend
 
-1. Set `NEXT_PUBLIC_PROOFBOUNTY_ADDRESS` in `.env.local` to the deployed address.
+1. Set `NEXT_PUBLIC_PROOFBOUNTY_ADDRESS` and `NEXT_PUBLIC_CREDIBILITY_ADDRESS` in `.env.local` to the deployed addresses, and set `NEXT_PUBLIC_PROOFBOUNTY_DEPLOY_BLOCK` to the ProofBounty deploy block.
 2. Regenerate the ABI from the build:
 
    ```bash
@@ -172,6 +196,12 @@ cd ..
    ```
 
 3. Restart `npm run dev`.
+
+### Known limits
+
+- **Review period** is fixed in the deployed ProofBounty contract. The current deployment uses one hour for testing. Redeploy with `REVIEW_PERIOD` to change it.
+- **Event index** scans 100 blocks per request. Very old history takes longer on first load.
+- **Wallet testing** covers injected wallets. Mobile wallets and WalletConnect are not set up.
 
 ## Deploy the frontend on Vercel
 

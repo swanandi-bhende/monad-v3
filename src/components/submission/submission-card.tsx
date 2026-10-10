@@ -1,17 +1,29 @@
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
+import {
+  CredibilityControls,
+  CredibilitySummary,
+} from "@/components/submission/credibility-controls";
 import { addressUrl } from "@/lib/blockchain/transaction";
 import { formatDateTime, shortAddress } from "@/lib/utils/format";
 import { decodeEvidence } from "@/lib/utils/evidence";
+import type { Credibility } from "@/lib/utils/credibility";
 import type { Submission } from "@/types/submission";
 
 export function SubmissionCard({
+  bountyId,
   submission,
   isWinner,
   action,
+  credibility,
+  viewerSignal,
 }: {
+  bountyId: bigint;
   submission: Submission;
   isWinner: boolean;
-  action?: React.ReactNode;
+  action?: ReactNode;
+  credibility: Credibility;
+  viewerSignal?: "credible" | "low_quality";
 }) {
   const evidence = decodeEvidence(submission.evidence);
 
@@ -46,6 +58,14 @@ export function SubmissionCard({
           {evidence.url} ↗
         </a>
       )}
+      <div className="border-line mt-4 space-y-3 border-t pt-4">
+        <CredibilitySummary credibility={credibility} />
+        <CredibilityControls
+          bountyId={bountyId}
+          submission={submission}
+          viewerSignal={viewerSignal}
+        />
+      </div>
     </div>
   );
 }

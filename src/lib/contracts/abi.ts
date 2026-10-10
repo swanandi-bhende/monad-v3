@@ -421,3 +421,162 @@ export const PROOFBOUNTY_ABI = [
     "inputs": []
   }
 ] as const;
+
+export const CREDIBILITY_ABI = [
+  {
+    "type": "constructor",
+    "inputs": [
+      {
+        "name": "bounty_",
+        "type": "address",
+        "internalType": "contract ProofBounty"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "bounty",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract ProofBounty"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "mark",
+    "inputs": [
+      {
+        "name": "bountyId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "submissionIndex",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "signal",
+        "type": "uint8",
+        "internalType": "enum SubmissionCredibility.Signal"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "signalOf",
+    "inputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint8",
+        "internalType": "enum SubmissionCredibility.Signal"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "tally",
+    "inputs": [
+      {
+        "name": "bountyId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "submissionIndex",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "credible",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "lowQuality",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "event",
+    "name": "SignalMarked",
+    "inputs": [
+      {
+        "name": "bountyId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "submissionIndex",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "voter",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "signal",
+        "type": "uint8",
+        "indexed": false,
+        "internalType": "enum SubmissionCredibility.Signal"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "AlreadyMarked",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidSignal",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "OwnSubmission",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "SubmissionNotFound",
+    "inputs": []
+  }
+] as const;

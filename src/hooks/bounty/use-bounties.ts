@@ -1,13 +1,14 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { readBountiesWithSubmissions, readBountyWithSubmissions } from "@/lib/blockchain/read";
 
-const POLL_MS = 10_000;
+const POLL_MS = 15_000;
 
 export function useBounties() {
   return useQuery({
     queryKey: ["bounties"],
     queryFn: readBountiesWithSubmissions,
     refetchInterval: POLL_MS,
+    retry: 2,
   });
 }
 
@@ -16,6 +17,7 @@ export function useBounty(id: bigint) {
     queryKey: ["bounty", id.toString()],
     queryFn: () => readBountyWithSubmissions(id),
     refetchInterval: POLL_MS,
+    retry: 2,
   });
 }
 
@@ -24,5 +26,6 @@ export function useRefreshBounties() {
   return () => {
     queryClient.invalidateQueries({ queryKey: ["bounties"] });
     queryClient.invalidateQueries({ queryKey: ["bounty"] });
+    queryClient.invalidateQueries({ queryKey: ["chain-events"] });
   };
 }

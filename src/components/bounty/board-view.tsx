@@ -2,18 +2,28 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { ActivityFeed } from "@/components/activity/activity-feed";
 import { BountyCard } from "@/components/bounty/bounty-card";
 import { Card, Stat } from "@/components/ui/card";
+import { FilterChips } from "@/components/ui/chips";
+import { QueryError } from "@/components/ui/query-error";
+import { useChainEvents } from "@/hooks/activity/use-chain-events";
 import { useBounties } from "@/hooks/bounty/use-bounties";
 import { BOUNTY_STATUS_LABELS } from "@/constants/bounty";
-import { shortAddress, formatDateTime, formatReward } from "@/lib/utils/format";
-import { recentSubmissions } from "@/lib/utils/profile";
+import { formatReward } from "@/lib/utils/format";
 import type { BountyStatus, BountyWithSubmissions } from "@/types/bounty";
 
 type Filter = BountyStatus | "all";
 type Sort = "ending" | "reward" | "newest";
 
-const FILTERS: Filter[] = ["open", "under_review", "expired", "completed", "refunded", "all"];
+const FILTER_OPTIONS: { value: Filter; label: string }[] = [
+  { value: "open", label: BOUNTY_STATUS_LABELS.open },
+  { value: "under_review", label: BOUNTY_STATUS_LABELS.under_review },
+  { value: "expired", label: BOUNTY_STATUS_LABELS.expired },
+  { value: "completed", label: BOUNTY_STATUS_LABELS.completed },
+  { value: "refunded", label: BOUNTY_STATUS_LABELS.refunded },
+  { value: "all", label: "All" },
+];
 
 const SORTS: { value: Sort; label: string }[] = [
   { value: "ending", label: "Ending soon" },
@@ -35,19 +45,30 @@ function applyFilters(bounties: BountyWithSubmissions[], filter: Filter, sort: S
 }
 
 export function BoardView() {
-  const { data: bounties, isPending, error } = useBounties();
+  const bounties = useBounties();
+  const events = useChainEvents();
   const [filter, setFilter] = useState<Filter>("open");
   const [sort, setSort] = useState<Sort>("ending");
 
-  if (isPending) return <p className="text-muted">Loading bounties from Monad Testnet…</p>;
-  if (error) return <p className="text-body text-danger">{error.message}</p>;
+  if (bounties.isPending) return <p className="text-muted">Loading bounties from Monad Testnet…</p>;
+  if (bounties.isError) {
+    return (
+      <QueryError
+        error={bounties.error}
+        onRetry={() => {
+          bounties.refetch();
+          events.refetch();
+        }}
+      />
+    );
+  }
 
-  const all = bounties;
+  const all = bounties.data;
   const openBounties = all.filter((b) => b.status === "open" || b.status === "under_review");
   const openReward = openBounties.reduce((sum, b) => sum + b.rewardAmount, BigInt(0));
   const completed = all.filter((b) => b.status === "completed").length;
   const visible = applyFilters(all, filter, sort);
-  const activity = recentSubmissions(all, 6);
+  const recent = [...(events.data ?? [])].reverse().slice(0, 8);
 
   return (
     <div className="space-y-10">
@@ -75,22 +96,7 @@ export function BoardView() {
 
       <section className="space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap gap-2">
-            {FILTERS.map((value) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setFilter(value)}
-                className={`text-caption rounded-full border px-3 py-1.5 transition-colors ${
-                  filter === value
-                    ? "border-accent bg-accent/15 text-ink"
-                    : "border-line text-muted hover:text-ink"
-                }`}
-              >
-                {value === "all" ? "All" : BOUNTY_STATUS_LABELS[value]}
-              </button>
-            ))}
-          </div>
+          <FilterChips options={FILTER_OPTIONS} value={filter} onChange={setFilter} />
           <select
             aria-label="Sort bounties"
             value={sort}
@@ -118,26 +124,21 @@ export function BoardView() {
         )}
       </section>
 
-      {activity.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-title font-semibold tracking-tight">Recent activity</h2>
-          <Card className="divide-line divide-y p-0">
-            {activity.map(({ bounty, submission }) => (
-              <Link
-                key={`${bounty.id}-${submission.index}`}
-                href={`/bounty/${bounty.id}`}
-                className="text-caption hover:bg-surface-raised flex flex-wrap items-center justify-between gap-3 px-5 py-3 transition-colors"
-              >
-                <span>
-                  <span className="text-muted font-mono">{shortAddress(submission.submitter)}</span>{" "}
-                  submitted to <span className="text-ink">{bounty.title}</span>
-                </span>
-                <span className="text-muted">{formatDateTime(submission.submittedAt)}</span>
-              </Link>
-            ))}
-          </Card>
-        </section>
-      )}
+      <section className="space-y-4">
+        <h2 className="text-title font-semibold tracking-tight">Recent activity</h2>
+        {events.isError ? (
+          <QueryError error={events.error} onRetry={() => events.refetch()} />
+        ) : (
+          <ActivityFeed
+            events={recent}
+            emptyText={
+              events.isPending
+                ? "Indexing on-chain activity from Monad. The first load can take about a minute."
+                : "No activity yet."
+            }
+          />
+        )}
+      </section>
     </div>
   );
 }

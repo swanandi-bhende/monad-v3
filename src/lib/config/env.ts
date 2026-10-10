@@ -18,6 +18,13 @@ function readAddress(value: string | undefined, name: string): Address | undefin
   return address;
 }
 
+function readBlock(value: string | undefined, name: string): number | undefined {
+  const block = value?.trim();
+  if (!block) return undefined;
+  if (!/^\d+$/.test(block)) throw new Error(`${name} must be a block number`);
+  return Number(block);
+}
+
 export const env = {
   monadRpcUrl: readUrl(
     process.env.NEXT_PUBLIC_MONAD_RPC_URL,
@@ -27,5 +34,13 @@ export const env = {
   proofBountyAddress: readAddress(
     process.env.NEXT_PUBLIC_PROOFBOUNTY_ADDRESS,
     "NEXT_PUBLIC_PROOFBOUNTY_ADDRESS",
+  ),
+  credibilityAddress: readAddress(
+    process.env.NEXT_PUBLIC_CREDIBILITY_ADDRESS,
+    "NEXT_PUBLIC_CREDIBILITY_ADDRESS",
+  ),
+  proofBountyDeployBlock: readBlock(
+    process.env.NEXT_PUBLIC_PROOFBOUNTY_DEPLOY_BLOCK,
+    "NEXT_PUBLIC_PROOFBOUNTY_DEPLOY_BLOCK",
   ),
 };

@@ -1,9 +1,11 @@
 import { erc20Abi, type Address, type Hash } from "viem";
 import { getAccount, readContract, writeContract } from "wagmi/actions";
 import { wagmiConfig } from "@/lib/blockchain/wagmi";
-import { PROOFBOUNTY_ABI } from "@/lib/contracts/abi";
-import { getProofBountyAddress } from "@/lib/contracts/proofbounty";
+import { CREDIBILITY_ABI, PROOFBOUNTY_ABI } from "@/lib/contracts/abi";
+import { getCredibilityAddress, getProofBountyAddress } from "@/lib/contracts/addresses";
 import type { BountyMetadata } from "@/types/bounty";
+
+export const SIGNAL_CODE = { credible: 1, low_quality: 2 } as const;
 
 export function connectedAccount(): Address {
   const address = getAccount(wagmiConfig).address;
@@ -68,5 +70,18 @@ export function refundBounty(bountyId: bigint): Promise<Hash> {
     abi: PROOFBOUNTY_ABI,
     functionName: "refund",
     args: [bountyId],
+  });
+}
+
+export function markSubmission(
+  bountyId: bigint,
+  submissionIndex: number,
+  signal: keyof typeof SIGNAL_CODE,
+): Promise<Hash> {
+  return writeContract(wagmiConfig, {
+    address: getCredibilityAddress(),
+    abi: CREDIBILITY_ABI,
+    functionName: "mark",
+    args: [bountyId, BigInt(submissionIndex), SIGNAL_CODE[signal]],
   });
 }

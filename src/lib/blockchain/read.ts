@@ -1,10 +1,26 @@
 import { zeroAddress } from "viem";
-import { getPublicClient, readContract } from "wagmi/actions";
+import { readContract, readContracts } from "wagmi/actions";
 import { wagmiConfig } from "@/lib/blockchain/wagmi";
 import { PROOFBOUNTY_ABI } from "@/lib/contracts/abi";
-import { getProofBountyAddress } from "@/lib/contracts/proofbounty";
+import { getProofBountyAddress } from "@/lib/contracts/addresses";
 import type { Bounty, BountyMetadata, BountyStatus, BountyWithSubmissions } from "@/types/bounty";
 import type { Submission } from "@/types/submission";
+
+type BountyTuple = readonly [
+  `0x${string}`,
+  `0x${string}`,
+  bigint,
+  bigint,
+  bigint,
+  number,
+  `0x${string}`,
+  string,
+];
+type SubmissionTuple = readonly {
+  submitter: `0x${string}`;
+  evidence: string;
+  submittedAt: bigint;
+}[];
 
 const RAW_STATUS_COMPLETED = 1;
 const RAW_STATUS_REFUNDED = 2;
@@ -30,23 +46,19 @@ function deriveStatus(raw: number, deadline: number, reviewEnd: number, now: num
   return "expired";
 }
 
-export function readBountyCount() {
-  return readContract(wagmiConfig, {
-    address: getProofBountyAddress(),
-    abi: PROOFBOUNTY_ABI,
-    functionName: "bountyCount",
-  });
-}
-
-export async function readBounty(id: bigint): Promise<Bounty> {
-  const [creator, token, reward, deadline, reviewEnd, rawStatus, winner, metadata] =
-    await readContract(wagmiConfig, {
-      address: getProofBountyAddress(),
-      abi: PROOFBOUNTY_ABI,
-      functionName: "bounties",
-      args: [id],
-    });
-
+function toBounty(
+  id: bigint,
+  [creator, token, reward, deadline, reviewEnd, rawStatus, winner, metadata]: readonly [
+    `0x${string}`,
+    `0x${string}`,
+    bigint,
+    bigint,
+    bigint,
+    number,
+    `0x${string}`,
+    string,
+  ],
+): Bounty {
   const deadlineSeconds = Number(deadline);
   const reviewEndSeconds = Number(reviewEnd);
   const now = Math.floor(Date.now() / 1000);
@@ -64,14 +76,10 @@ export async function readBounty(id: bigint): Promise<Bounty> {
   };
 }
 
-export async function readSubmissions(bountyId: bigint): Promise<Submission[]> {
-  const submissions = await readContract(wagmiConfig, {
-    address: getProofBountyAddress(),
-    abi: PROOFBOUNTY_ABI,
-    functionName: "getSubmissions",
-    args: [bountyId],
-  });
-
+function toSubmissions(
+  bountyId: bigint,
+  submissions: readonly { submitter: `0x${string}`; evidence: string; submittedAt: bigint }[],
+): Submission[] {
   return submissions.map((submission, index) => ({
     bountyId,
     index,
@@ -81,41 +89,58 @@ export async function readSubmissions(bountyId: bigint): Promise<Submission[]> {
   }));
 }
 
+export function readBountyCount() {
+  return readContract(wagmiConfig, {
+    address: getProofBountyAddress(),
+    abi: PROOFBOUNTY_ABI,
+    functionName: "bountyCount",
+  });
+}
+
 export async function readBountyWithSubmissions(id: bigint): Promise<BountyWithSubmissions> {
-  const [bounty, submissions] = await Promise.all([readBounty(id), readSubmissions(id)]);
-  return { ...bounty, submissions };
+  const address = getProofBountyAddress();
+  const [bounty, submissions] = await readContracts(wagmiConfig, {
+    allowFailure: false,
+    contracts: [
+      { address, abi: PROOFBOUNTY_ABI, functionName: "bounties", args: [id] },
+      { address, abi: PROOFBOUNTY_ABI, functionName: "getSubmissions", args: [id] },
+    ],
+  });
+  return {
+    ...toBounty(id, bounty),
+    submissions: toSubmissions(id, submissions),
+  };
 }
 
 export async function readBountiesWithSubmissions(): Promise<BountyWithSubmissions[]> {
-  const count = await readBountyCount();
-  const ids = Array.from({ length: Number(count) }, (_, index) => BigInt(index));
-  return Promise.all(ids.map(readBountyWithSubmissions));
-}
+  const count = Number(await readBountyCount());
+  if (count === 0) return [];
 
-const LOG_WINDOW = BigInt(99);
-const MAX_LOG_WINDOWS = 300;
+  const address = getProofBountyAddress();
+  const ids = Array.from({ length: count }, (_, index) => BigInt(index));
+  const [bounties, submissions] = await Promise.all([
+    readContracts(wagmiConfig, {
+      allowFailure: false,
+      contracts: ids.map((id) => ({
+        address,
+        abi: PROOFBOUNTY_ABI,
+        functionName: "bounties",
+        args: [id],
+      })),
+    }),
+    readContracts(wagmiConfig, {
+      allowFailure: false,
+      contracts: ids.map((id) => ({
+        address,
+        abi: PROOFBOUNTY_ABI,
+        functionName: "getSubmissions",
+        args: [id],
+      })),
+    }),
+  ]);
 
-export async function findSettlementTxHash(
-  bountyId: bigint,
-  eventName: "WinnerSelected" | "BountyRefunded",
-) {
-  const client = getPublicClient(wagmiConfig);
-  if (!client) return undefined;
-
-  let toBlock = await client.getBlockNumber();
-  for (let window = 0; window < MAX_LOG_WINDOWS && toBlock >= BigInt(0); window++) {
-    const fromBlock = toBlock > LOG_WINDOW ? toBlock - LOG_WINDOW : BigInt(0);
-    const logs = await client.getContractEvents({
-      address: getProofBountyAddress(),
-      abi: PROOFBOUNTY_ABI,
-      eventName,
-      args: { bountyId },
-      fromBlock,
-      toBlock,
-    });
-    if (logs.length) return logs[logs.length - 1].transactionHash;
-    if (fromBlock === BigInt(0)) break;
-    toBlock = fromBlock - BigInt(1);
-  }
-  return undefined;
+  return ids.map((id, index) => ({
+    ...toBounty(id, bounties[index] as unknown as BountyTuple),
+    submissions: toSubmissions(id, submissions[index] as unknown as SubmissionTuple),
+  }));
 }

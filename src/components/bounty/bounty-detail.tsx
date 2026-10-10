@@ -1,57 +1,59 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ConnectPrompt } from "@/components/ui/connect-prompt";
+import { QueryError } from "@/components/ui/query-error";
 import { TxStatus } from "@/components/ui/tx-status";
 import { Countdown } from "@/components/bounty/countdown";
 import { StatusBadge } from "@/components/bounty/status-badge";
 import { SubmitWorkForm } from "@/components/forms/submit-work-form";
 import { SubmissionCard } from "@/components/submission/submission-card";
+import { useChainEvents } from "@/hooks/activity/use-chain-events";
 import { useBounty, useRefreshBounties } from "@/hooks/bounty/use-bounties";
 import { useTransaction } from "@/hooks/transaction/use-transaction";
 import { useWallet } from "@/hooks/wallet/use-wallet";
 import { addressUrl, txUrl } from "@/lib/blockchain/transaction";
-import { findSettlementTxHash } from "@/lib/blockchain/read";
 import { refundBounty, selectWinner } from "@/lib/blockchain/write";
+import { credibilityFor, viewerSignal } from "@/lib/utils/credibility";
 import { formatDateTime, formatReward, shortAddress } from "@/lib/utils/format";
 import { sameAddress } from "@/lib/utils/profile";
+import type { ChainEvent } from "@/types/event";
 import type { Hash } from "viem";
 
 export function BountyDetail({ id }: { id: bigint }) {
   const query = useBounty(id);
+  const events = useChainEvents();
   const { address, isConnected, isWrongNetwork, switchToMonadTestnet, isSwitching } = useWallet();
   const refresh = useRefreshBounties();
   const selectTx = useTransaction();
   const refundTx = useTransaction();
+
+  if (query.isPending) return <p className="text-muted">Loading bounty…</p>;
+  if (query.isError) return <QueryError error={query.error} onRetry={() => query.refetch()} />;
   const bounty = query.data;
-  const isCreator = sameAddress(address, bounty?.creator);
+
+  const eventList: ChainEvent[] = events.data ?? [];
+  const isCreator = sameAddress(address, bounty.creator);
   const busy =
     selectTx.state.status === "awaiting_signature" ||
     selectTx.state.status === "pending" ||
     refundTx.state.status === "awaiting_signature" ||
     refundTx.state.status === "pending";
 
-  const settlementEvent = bounty?.status === "completed" ? "WinnerSelected" : "BountyRefunded";
-  const settlement = useQuery({
-    queryKey: ["settlement", id.toString(), settlementEvent],
-    queryFn: () => findSettlementTxHash(id, settlementEvent),
-    enabled: bounty?.status === "completed" || bounty?.status === "refunded",
-    staleTime: Number.POSITIVE_INFINITY,
-  });
-
-  if (query.isPending) return <p className="text-muted">Loading bounty…</p>;
-  if (query.isError) {
-    return <p className="text-danger text-body">{query.error.message}</p>;
-  }
-  if (!bounty) return null;
+  const winnerEvent = eventList.find((e) => e.kind === "winner" && e.bountyId === Number(id));
+  const refundEvent = eventList.find((e) => e.kind === "refunded" && e.bountyId === Number(id));
+  const winnerTime = winnerEvent?.timestamp;
+  const settlementHash: Hash | undefined =
+    bounty.status === "completed"
+      ? (winnerEvent?.txHash ?? selectTx.state.hash)
+      : bounty.status === "refunded"
+        ? (refundEvent?.txHash ?? refundTx.state.hash)
+        : undefined;
 
   const canSelect = isCreator && (bounty.status === "open" || bounty.status === "under_review");
   const canRefund = isCreator && bounty.status === "expired";
   const canSubmit = bounty.status === "open" && !isCreator;
-  const settlementHash: Hash | undefined =
-    (bounty.status === "completed" ? selectTx.state.hash : refundTx.state.hash) ?? settlement.data;
 
   async function onSelect(index: number) {
     const receipt = await selectTx.execute(() => selectWinner(id, index));
@@ -77,16 +79,27 @@ export function BountyDetail({ id }: { id: bigint }) {
           <p className="text-body text-muted whitespace-pre-wrap">{bounty.description}</p>
         </div>
 
+        {bounty.status === "under_review" && (
+          <Card className="border-status-review/40">
+            <p className="text-caption text-status-review font-medium">Under review</p>
+            <p className="text-body mt-2">
+              The submission deadline has passed. The creator can select a winner until{" "}
+              {formatDateTime(bounty.reviewEnd)}. After that, the reward can be reclaimed.
+            </p>
+          </Card>
+        )}
+
         {bounty.status === "completed" && (
           <Card className="border-status-completed/40 space-y-3">
             <p className="text-caption text-status-completed font-medium">
-              Winner selected · reward paid
+              Winner selected · reward paid on-chain
             </p>
             <p className="text-body">
               <span className="font-mono">{bounty.winner && shortAddress(bounty.winner)}</span>{" "}
               received <span className="font-mono">{formatReward(bounty.rewardAmount)}</span>
+              {winnerTime ? ` on ${formatDateTime(winnerTime)}` : ""}
             </p>
-            <SettlementLink hash={settlementHash} loading={settlement.isFetching} />
+            <SettlementLink hash={settlementHash} loading={events.isPending} />
           </Card>
         )}
 
@@ -96,14 +109,14 @@ export function BountyDetail({ id }: { id: bigint }) {
             <p className="text-body">
               {formatReward(bounty.rewardAmount)} was returned to {shortAddress(bounty.creator)}.
             </p>
-            <SettlementLink hash={settlementHash} loading={settlement.isFetching} />
+            <SettlementLink hash={settlementHash} loading={events.isPending} />
           </Card>
         )}
 
         {bounty.status === "expired" && (
           <Card className="text-body text-muted">
             The deadline and review period passed without a winner.
-            {isCreator ? " You can reclaim the reward below." : ""}
+            {isCreator ? " You can reclaim the escrowed reward below." : ""}
           </Card>
         )}
 
@@ -117,8 +130,11 @@ export function BountyDetail({ id }: { id: bigint }) {
           {bounty.submissions.map((submission) => (
             <SubmissionCard
               key={submission.index}
+              bountyId={id}
               submission={submission}
               isWinner={sameAddress(bounty.winner, submission.submitter)}
+              credibility={credibilityFor(eventList, id, submission.index)}
+              viewerSignal={viewerSignal(eventList, id, submission.index, address)}
               action={
                 canSelect && !isWrongNetwork ? (
                   <Button
@@ -143,10 +159,10 @@ export function BountyDetail({ id }: { id: bigint }) {
           ))}
       </section>
 
-      <aside className="space-y-4 lg:sticky lg:top-8 lg:self-start">
+      <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
         <Card className="space-y-5">
           <div>
-            <p className="text-caption text-muted">Reward</p>
+            <p className="text-caption text-muted">Reward (escrowed)</p>
             <p className="text-title mt-1 font-semibold tracking-tight">
               {formatReward(bounty.rewardAmount)}
             </p>
@@ -181,11 +197,6 @@ export function BountyDetail({ id }: { id: bigint }) {
           </div>
         </Card>
 
-        {isCreator && canSelect && (
-          <p className="text-caption text-muted">
-            Pick a submission above to pay it out. Selection closes at the review end time.
-          </p>
-        )}
         {canRefund && (
           <Card className="space-y-4">
             <p className="text-body">Reclaim the escrowed reward.</p>
@@ -201,7 +212,7 @@ export function BountyDetail({ id }: { id: bigint }) {
             <TxStatus state={refundTx.state} label="Reclaim reward" />
           </Card>
         )}
-        {!isConnected && bounty.status === "open" && (
+        {!isConnected && bounty.status !== "completed" && bounty.status !== "refunded" && (
           <p className="text-caption text-muted">Connect a wallet to participate.</p>
         )}
       </aside>
@@ -225,8 +236,8 @@ function SettlementLink({ hash, loading }: { hash?: Hash; loading: boolean }) {
   return (
     <p className="text-caption text-muted">
       {loading
-        ? "Looking up the settlement transaction…"
-        : "Settlement transaction not found in recent blocks."}
+        ? "Loading the settlement transaction from chain events…"
+        : "Settlement transaction is not in the index yet."}
     </p>
   );
 }

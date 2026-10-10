@@ -1,27 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { BountyCard } from "@/components/bounty/bounty-card";
+import { useState } from "react";
+import { ActivityFeed } from "@/components/activity/activity-feed";
 import { StatusBadge } from "@/components/bounty/status-badge";
 import { Card, Stat } from "@/components/ui/card";
 import { ConnectPrompt } from "@/components/ui/connect-prompt";
+import { QueryError } from "@/components/ui/query-error";
+import { useChainEvents } from "@/hooks/activity/use-chain-events";
 import { useBounties } from "@/hooks/bounty/use-bounties";
 import { useWallet } from "@/hooks/wallet/use-wallet";
-import { addressUrl } from "@/lib/blockchain/transaction";
+import { addressUrl, txUrl } from "@/lib/blockchain/transaction";
 import { formatDateTime, formatReward } from "@/lib/utils/format";
-import { computeProfile, sameAddress, submissionsBy } from "@/lib/utils/profile";
+import { computeProfile, sameAddress } from "@/lib/utils/profile";
+import type { ChainEvent } from "@/types/event";
 
 export function ProfileView() {
   const { address } = useWallet();
-  const { data: bounties, isPending, error } = useBounties();
+  const bounties = useBounties();
+  const events = useChainEvents();
+  const [tab, setTab] = useState<"history" | "activity">("history");
 
   if (!address)
-    return <ConnectPrompt message="Connect a wallet to see your profile and work history." />;
-  if (isPending) return <p className="text-muted">Loading your history…</p>;
-  if (error) return <p className="text-body text-danger">{error.message}</p>;
+    return <ConnectPrompt message="Connect a wallet to see your verifiable work history." />;
+  if (bounties.isPending || events.isPending)
+    return <p className="text-muted">Loading your history from chain…</p>;
+  if (bounties.isError) {
+    return <QueryError error={bounties.error} onRetry={() => bounties.refetch()} />;
+  }
+  if (events.isError) return <QueryError error={events.error} onRetry={() => events.refetch()} />;
 
-  const profile = computeProfile(bounties, address);
-  const activity = submissionsBy(bounties, address).slice(0, 10);
+  const chainEvents: ChainEvent[] = events.data;
+  const profile = computeProfile(bounties.data, chainEvents, address);
+  const myEvents = chainEvents
+    .filter((e) => sameAddress(e.actor, address))
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .slice(0, 25);
 
   return (
     <div className="space-y-10">
@@ -37,52 +51,96 @@ export function ProfileView() {
         </a>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Bounties won" value={profile.won.length} />
-        <Stat label="Bounties posted" value={profile.posted.length} />
-        <Stat label="Total rewards earned" value={formatReward(profile.totalEarned)} />
-        <Stat label="Success rate" value={`${Math.round(profile.successRate * 100)}%`} />
+      <section className="space-y-4">
+        <h2 className="text-title font-semibold tracking-tight">Reputation</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Stat label="Bounties won" value={profile.work.length} />
+          <Stat label="Completed bounties (as submitter)" value={profile.completedWork.length} />
+          <Stat label="Bounties posted" value={profile.posted.length} />
+          <Stat label="Total rewards earned" value={formatReward(profile.totalEarned)} />
+        </div>
+        <Card className="text-caption text-muted space-y-2">
+          <p>
+            Reputation counts only on-chain outcomes: bounties won, completed bounties, and rewards
+            paid to your wallet. Each number links back to the underlying transactions below.
+          </p>
+          <p>
+            Credible signals received ({profile.received.credible}) are shown as supporting context
+            only. They do not change payouts or the numbers above.
+          </p>
+        </Card>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-title font-semibold tracking-tight">Won bounties</h2>
-        <p className="text-caption text-muted">
-          {profile.completedWork.length} completed bounties where you submitted work,{" "}
-          {profile.won.length} won.
-        </p>
-        {profile.won.length > 0 && (
-          <div className="grid gap-5 md:grid-cols-2">
-            {profile.won.map((bounty) => (
-              <BountyCard key={bounty.id.toString()} bounty={bounty} />
-            ))}
-          </div>
-        )}
-      </section>
+      <div className="flex gap-2">
+        {(["history", "activity"] as const).map((value) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setTab(value)}
+            className={`text-caption rounded-full border px-4 py-1.5 transition-colors ${
+              tab === value
+                ? "border-accent bg-accent/15 text-ink"
+                : "border-line text-muted hover:text-ink"
+            }`}
+          >
+            {value === "history" ? `Work history (${profile.work.length})` : "My activity"}
+          </button>
+        ))}
+      </div>
 
-      <section className="space-y-4">
-        <h2 className="text-title font-semibold tracking-tight">Recent activity</h2>
-        {activity.length === 0 && <p className="text-body text-muted">No submissions yet.</p>}
-        {activity.length > 0 && (
-          <Card className="divide-line divide-y p-0">
-            {activity.map(({ bounty, submission }) => (
-              <Link
-                key={`${bounty.id}-${submission.index}`}
-                href={`/bounty/${bounty.id}`}
-                className="text-caption hover:bg-surface-raised flex flex-wrap items-center justify-between gap-3 px-5 py-3 transition-colors"
-              >
-                <span className="flex items-center gap-3">
-                  <span>Submitted to {bounty.title}</span>
-                  <StatusBadge status={bounty.status} />
-                </span>
-                <span className="text-muted">
-                  {formatDateTime(submission.submittedAt)}
-                  {sameAddress(bounty.winner, address) ? " · won" : ""}
-                </span>
-              </Link>
-            ))}
-          </Card>
-        )}
-      </section>
+      {tab === "history" && (
+        <section className="space-y-4">
+          {profile.work.length === 0 ? (
+            <Card>
+              <p className="text-body text-muted">
+                No bounties won yet.{" "}
+                <Link href="/" className="text-accent hover:underline">
+                  Browse open bounties
+                </Link>
+              </p>
+            </Card>
+          ) : (
+            <Card className="divide-line divide-y p-0">
+              {profile.work.map(({ event, bounty }) => (
+                <div
+                  key={event.txHash}
+                  className="flex flex-wrap items-center justify-between gap-4 px-5 py-4"
+                >
+                  <div className="min-w-0">
+                    <Link
+                      href={`/bounty/${event.bountyId}`}
+                      className="text-body hover:text-accent truncate font-medium"
+                    >
+                      {bounty?.title ?? `Bounty #${event.bountyId}`}
+                    </Link>
+                    <p className="text-caption text-muted mt-1">
+                      Completed {event.timestamp ? formatDateTime(event.timestamp) : "—"}
+                    </p>
+                  </div>
+                  <div className="text-caption flex items-center gap-4">
+                    <span className="font-mono">{formatReward(BigInt(event.amount ?? 0))}</span>
+                    {bounty && <StatusBadge status={bounty.status} />}
+                    <a
+                      href={txUrl(event.txHash)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent font-mono hover:underline"
+                    >
+                      tx ↗
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </Card>
+          )}
+        </section>
+      )}
+
+      {tab === "activity" && (
+        <section className="space-y-4">
+          <ActivityFeed events={myEvents} emptyText="No on-chain activity from this wallet yet." />
+        </section>
+      )}
     </div>
   );
 }

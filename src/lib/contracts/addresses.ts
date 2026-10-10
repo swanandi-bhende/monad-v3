@@ -9,3 +9,12 @@ export function getProofBountyAddress(): Address {
   }
   return env.proofBountyAddress;
 }
+
+export function getCredibilityAddress(): Address {
+  if (!env.credibilityAddress) {
+    throw new Error(
+      "NEXT_PUBLIC_CREDIBILITY_ADDRESS is not set. Deploy SubmissionCredibility first.",
+    );
+  }
+  return env.credibilityAddress;
+}

@@ -1,0 +1,2533 @@
+﻿Detailed Info
+
+
+Network Information - Testnet
+
+
+Copy page
+
+
+testnet was reset from genesis on 2025-12-16.
+Name        Value
+Chain ID        10143
+Network Name        Monad Testnet
+Currency Symbol        MON
+RPC URL        see below
+Block Explorer (MonadVision)        https://testnet.monadvision.com
+Block Explorer (Monadscan)        https://testnet.monadscan.com
+Network visualization        https://www.gmonads.com/?network=testnet
+App hub        https://testnet.monad.xyz/
+Faucet        https://faucet.monad.xyz
+Current version / revision        v0.15.2 / MONAD_NINE
+Changelog        (link)
+​
+Public RPC Endpoints
+Websocket endpoints start with wss://. See Websocket Reference for further information.
+RPC URL        Provider        Rate Limits        Batch Requests        Archive Support        Notes
+https://testnet-rpc.monad.xyz
+wss://testnet-rpc.monad.xyz        QuickNode        50 rps        100        ✅        25 rps for eth_call and eth_estimateGas
+https://rpc.ankr.com/monad_testnet        Ankr        300 reqs / 10s
+
+
+12000 reqs / 10 min        100        ❌        debug_* methods are not allowed
+https://rpc-testnet.monadinfra.com
+wss://rpc-testnet.monadinfra.com        Monad Foundation        20 rps        not allowed        ✅        
+See RPC Limits for additional detail on method-specific limits.
+​
+Canonical Contracts
+Name        Address
+Wrapped MON        0xFb8bf4c1CC7a94c73D209a149eA2AbEa852BC541
+CreateX        0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed
+Foundry Deterministic Deployer        0x4e59b44847b379578588920ca78fbf26c0b4956c
+ERC-6492 UniversalSigValidator        0xdAcD51A54883eb67D95FAEb2BBfdC4a9a6BD2a3B
+EntryPoint v0.6        0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789
+EntryPoint v0.7        0x0000000071727De22E5E9d8BAf0edAc6f37da032
+EntryPoint v0.8        0x4337084d9e255fF0702461CF8895cE9E3b5Ff108
+EntryPoint v0.9        0x433709009B8330FDa32311DF1C2AFA402eD8D009
+Multicall3        0xcA11bde05977b3631167028862bE2a173976CA11
+Permit2        0x000000000022d473030f116ddee9f6b43ac78ba3
+SafeSingletonFactory        0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7
+x402 ExactPermit2Proxy        0x402085c248EeA27D92E8b30b2C58ed07f9E20001
+x402 UptoPermit2Proxy        0x4020A4f3b7b90ccA423B9fabCc0CE57C6C240002
+​
+Safe v1.4.1 Contracts
+Name        Address
+Safe        0x41675C099F32341bf84BFc5382aF534df5C7461a
+SafeL2        0x29fcB43b46531BcA003ddC8FCB67FFE91900C762
+SafeProxyFactory        0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67
+MultiSend        0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526
+MultiSendCallOnly        0x9641d764fc13c8B624c04430C7356C1C7C8102e2
+CompatibilityFallbackHandler        0xfd0732Dc9E303f09fCEf3a7388Ad10A83459Ec99
+SignMessageLib        0xd53cd0aB83D845Ac265BE939c57F53AD838012c9
+CreateCall        0x9b35Af71d77eaf8d7e40252370304687390A1A52
+SimulateTxAccessor        0x3d4BA2E0884aa488718476ca2FB8Efc291A46199
+​
+Testnet Tokens (partial list)
+See tokenlist-testnet.json.
+
+
+
+
+Deploy a smart contract on Monad using Foundry
+
+
+Copy page
+
+
+This guide uses the official Foundry v1.8 or later to compile and deploy a contract on Monad Testnet.
+​
+1. Install Foundry
+Install the official Foundry installer:
+curl -L https://foundry.paradigm.xyz | bash
+Follow the installer instructions to add foundryup to your shell, then install the latest stable release:
+foundryup
+Confirm that forge --version reports v1.8.0 or later. See the Foundry toolkit page for more installation and migration guidance.
+​
+2. Create a new foundry project
+You can use foundry-monad template to create a new project.
+Foundry-Monad is a Foundry template with Monad configuration.
+The below command uses foundry-monad to create a new foundry project:
+forge init --template monad-developers/foundry-monad [project_name]
+Alternatively, you can create a foundry project using the command below:
+forge init [project_name]
+​
+3. Modify Foundry configuration
+Update foundry.toml to select the Monad execution environment and configure Monad Testnet:
+foundry.toml
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+network = "monad"
+# Monad Testnet Configuration
+eth-rpc-url = "https://testnet-rpc.monad.xyz"
+chain_id = 10143
+The network = "monad" setting is the persistent equivalent of passing --network monad. It makes Forge use Monad’s execution rules for local compilation, testing, scripts, and transaction simulation. Foundry selects the active hardfork automatically when interacting with Monad Testnet.
+​
+4. Write a smart contract
+You can write your smart contracts under the src folder. There is already a Counter contract in the project located at src/Counter.sol.
+src/Counter.sol
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.13;
+
+
+contract Counter {
+    uint256 public number;
+
+
+    function setNumber(uint256 newNumber) public {
+        number = newNumber;
+    }
+
+
+    function increment() public {
+        number++;
+    }
+}
+​
+5. Compile the smart contract
+forge compile
+Compilation process output can be found in the newly created out directory, which includes contract ABI and bytecode.
+​
+6. Deploy the smart contract
+For deploying contracts, we recommend using keystores instead of private keys.
+​
+Get testnet funds
+Deploying smart contracts requires testnet funds. Claim testnet funds via a faucet.
+​
+Deploy smart contract
+Using a Keystore (Recommended)
+Using a Private Key (Not Recommended)
+Using a keystore is much safer than using a private key because keystore encrypts the private key and can later be referenced in any commands that require a private key.
+Create a new keystore by importing a newly generated private key with the command below.
+cast wallet import monad-deployer --private-key $(cast wallet new | grep 'Private key:' | awk '{print $3}')
+Here is what the command above does, step by step:
+Generates a new private key
+Imports the private key into a keystore file named monad-deployer
+Prints the address of the newly created wallet to the console
+After creating the keystore, you can read its address using:
+cast wallet address --account monad-deployer
+Provide a password to encrypt the keystore file when prompted and do not forget it.
+Run the below command to deploy your smart contracts
+forge create src/Counter.sol:Counter --account monad-deployer --broadcast
+On successful deployment of the smart contract, the output should be similar to the following:
+[⠊] Compiling...
+Deployer: 0xB1aB62fdFC104512F594fCa0EF6ddd93FcEAF67b
+Deployed to: 0x67329e4dc233512f06c16cF362EC3D44Cdc800e0
+Transaction hash: 0xa0a40c299170c9077d321a93ec20c71e91b8aff54dd9fa33f08d6b61f8953ee0
+​
+Next Steps
+Check out how to verify the deployed smart contract on MonadVision.
+Deploy a Contract
+Previous
+
+
+
+
+Verify a smart contract on Monad using Foundry
+
+
+Copy page
+
+
+Once your contract is deployed to a live network, the next step is to verify its source code on the block explorer.
+Verifying a contract means uploading its source code, along with the settings used to compile the code, to a repository (typically maintained by a block explorer). This allows anyone to compile it and compare the generated bytecode with what is deployed on chain. Doing this is extremely important in an open platform like Monad.
+In this guide we’ll explain how to do this using Foundry v1.8 or later with the Monad execution environment enabled.
+This guide assumes you have Foundry v1.8.0 or later installed and network = "monad" configured in foundry.toml. See the installation and configuration instructions if you haven’t set it up yet.
+Mainnet
+Testnet
+Foundry Monad template (Recommended)
+Default Foundry Project
+The foundry-monad template is configured for testnet by default. To use mainnet, update your foundry.toml file:
+Change eth-rpc-url="https://testnet-rpc.monad.xyz" to your mainnet RPC URL
+Change chain_id = 10143 to 143
+If you are using foundry-monad template, you can use the commands below based on your preferred block explorer:
+MonadVision
+Monadscan
+forge verify-contract \
+    <contract_address> \
+    <contract_name> \
+    --chain 143 \
+    --verifier sourcify \
+    --verifier-url https://sourcify-api-monad.blockvision.org/
+Example:
+forge verify-contract \
+    0x8fEc29BdEd7A618ab6E3CD945456A79163995769 \
+    Counter \
+    --chain 143 \
+    --verifier sourcify \
+    --verifier-url https://sourcify-api-monad.blockvision.org/
+On successful verification of smart contract, you should get a similar output in your terminal:
+Start verifying contract `0x8fEc29BdEd7A618ab6E3CD945456A79163995769` deployed on monad-mainnet
+Attempting to verify on Sourcify. Pass the --etherscan-api-key <API_KEY> to verify on Etherscan, or use the --verifier flag to verify on another provider.
+
+
+Submitting verification for [Counter] "0x8fEc29BdEd7A618ab6E3CD945456A79163995769".
+Contract successfully verified
+Now check the contract on MonadVision.
+
+
+
+
+Tokens and Bridges
+
+
+Copy page
+
+
+This page is generated from the token-list repo. See the repo (or the raw json) for a fuller list of tokens.
+Assets issued natively on another chain are bridged to Monad via a few different bridges, including LayerZero OFT, Chainlink CCIP, Hyperlane, and the 2/2 NTT Bridge, typically designated by the asset issuer.
+To bridge an asset to Monad, users typically have two options:
+Use a frontend integrating the native bridge, e.g.
+Stargate for LayerZero OFT
+Transporter for Chainlink CCIP
+Nexus for Hyperlane
+MonadBridge for 2/2 NTT
+Use a bridge aggregator that incorporates multiple solvers and cross-chain swaps, and has selective coverage of native bridges:
+Jumper - incorporates multiple solvers and select OFTs and CCIP-bridged assets via Glacis.
+Option 1 ensures the native (wrapping/unwrapping) mechanism is considered, but Option 2 may be convenient if bridging from a remote chain or executing a cross-chain swap.
+The tables below link to the appropriate bridge (option 1) for each asset. Notable markets are linked based on TVL/volume.
+​
+Bridged Assets
+​
+Dollar-related
+Symbol        Name        Address        Bridge + Link        Bridgeable from        Select Markets
+AUSD        Agora USD        0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a        LayerZero OFT (Stargate)        Eth, Avax, Base        Curve 3pool
+Uni AUSD/USDC
+USDC        USDC        0x754704Bc059F8C67012fEd69BC8A327a5aafb603        Circle CCTP (link)        17 chains        Curve 3pool
+USDT0        Tether USD        0xe7cd86e13AC4309349F30B3435a9d337750fC82D        LayerZero OFT (Stargate)        18 chains        Curve 3pool
+Uni AUSD/USDT0
+mUSD        MetaMask USD        0xacA92E438df0B2401fF60dA7E4337B687a2435DA        Hyperlane (Nexus)        Eth, BNB, Linea        
+USD1        USD1        0x111111d2bf19e43C34263401e0CAd979eD1cdb61        Chainlink CCIP (Transporter)        Eth        PCS USD1/USDC
+GHO        Gho Token        0xfc421aD3C883Bf9E7C4f42dE845C4e4405799e73        Chainlink CCIP (Transporter)        Eth, Arb, Base, Avax, +5        
+USDe        USDe        0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34        LayerZero OFT (Stargate)        Eth, Arb, Base, Sol, +10        
+sUSDe        Staked USDe        0x211Cc4DD073734dA055fbF44a2b4667d5E5fE5d2        LayerZero OFT (Stargate)        Eth, Arb, Base, +10        
+syrupUSDC        Syrup USDC        0xaB6e5a0C3799d020c790D34F7B2C02639e238AF7        Chainlink CCIP (Transporter)        Eth        
+wsrUSD        Wrapped srUSD        0x4809010926aec940b550D34a46A52739f996D75D        LayerZero OFT (Stargate)        Eth        
+syzUSD        Staked Yuzu USD        0x484be0540aD49f351eaa04eeB35dF0f937D4E73f        LayerZero OFT (Stargate)        Eth, Plasma        
+​
+Eth-related
+Symbol        Name        Address        Bridge + Link        Bridgeable from        Select Markets
+WETH        Wrapped Ether        0xEE8c0E9f1BFFb4Eb878d8f15f368A02a35481242        NTT 2/2 (MonadBridge)        many        Uni WETH/MON
+Uni USDC/WETH
+wstETH        Lido Wrapped Staked ETH        0x10Aeaf63194db8d453d4D85a06E5eFE1dd0b5417        Chainlink CCIP (Transporter)        Eth, Ink, Plasma        Uni wstETH/WETH
+weETH        Wrapped EtherFi ETH        0xA3D68b74bF0528fdD07263c60d6488749044914b        LayerZero OFT (Stargate)        Eth, Base        Uni weETH/WETH
+ezETH        Renzo Restaked ETH        0x2416092f143378750bb29b79eD961ab195CcEea5        Hyperlane (Nexus)        many        Curve ezETH/WETH
+rETH        Rocket Pool ETH        0xC50f2e735eDd9dCD8Ccd41EcFE9894E679e3195f        Chainlink CCIP (Transporter)        Eth        
+​
+BTC-related
+Symbol        Name        Address        Bridge + Link        Bridgeable from        Select Markets
+cbBTC        Coinbase Wrapped BTC        0xd18B7EC58Cdf4876f6AFebd3Ed1730e4Ce10414b        Chainlink CCIP (Transporter)        Base        Curve cbBTC/WBTC/LBTC
+Uni USDC/cbBTC
+WBTC        Wrapped Bitcoin        0x0555E30da8f98308EdB960aa94C0Db47230d2B9c        LayerZero OFT (Stargate)        Eth, Base, +15        Curve cbBTC/WBTC/LBTC
+Uni MON/WBTC
+Uni WBTC/USDC
+LBTC        Lombard Staked Bitcoin        0xecAc9C5F704e954931349Da37F60E39f515c11c1        Chainlink CCIP (Transporter)        Eth, Avax, Base, BNB, Sonic        Curve cbBTC/WBTC/LBTC
+Curve Bitcoin Converter
+BTC.b        BTC.b        0xB0F70C0bD6FD87dbEb7C10dC692a2a6106817072        Chainlink CCIP (Transporter)        Eth, Avax        Curve Bitcoin Converter
+SolvBTC        Solv BTC        0xaE4EFbc7736f963982aACb17EFA37fCBAb924cB3        Chainlink CCIP (Transporter)        Eth        
+xSolvBTC        xSolvBTC        0xc99F5c922DAE05B6e2ff83463ce705eF7C91F077        Chainlink CCIP (Transporter)        Eth        
+​
+Others
+Symbol        Name        Address        Bridge + Link        Bridgeable from        Select Markets
+SOL        Wrapped SOL        0xea17E5a9efEBf1477dB45082d67010E2245217f1        Wormhole (Portal)        many        
+XAUt0        Tether Gold        0x01bFF41798a0BcF287b996046Ca68b395DbC1071        LayerZero OFT (Stargate)        Eth, Arb, Sol, +10        Uni XAUt0/AUSD
+​
+Natively-Issued Assets
+Symbol        Name        Address
+WMON        Wrapped MON        0x3bd359C1119dA7Da1D913D1C4D2B7c461115433A
+​
+Market Data
+Defined
+GeckoTerminal
+MonadVision Tokens
+DeFiLlama Monad
+​
+Bridge Integrations
+See Cross-Chain for a list of supported bridges and bridge aggregators.
+​
+MON on other blockchains
+
+
+
+
+Differences between Monad and Ethereum
+
+
+Copy page
+
+
+Use Foundry v1.8.0 or later with the Monad execution network enabled so your local development environment follows Monad’s onchain behavior.
+This list assembles notable behavioral differences between Monad and Ethereum from the perspective of a smart contract developer.
+​
+Virtual Machine
+The maximum contract code size limit is 128 KB (up from 24 KB in Ethereum). Consequently, the max init code size limit is 256 KB (up from 48 KB in Ethereum).
+A few opcodes and precompiles are repriced, to reweight relative scarcities of resources due to Monad optimizations. See Opcode Pricing.
+Memory expansion is priced linearly rather than quadratically, and a transaction can use at most 8 MB of memory. See Memory expansion.
+The secp256r1 (P256) verification precompile at 0x0100 per EIP-7951 is supported, enabling on-chain verification of WebAuthn/passkey signatures. See Precompiles.
+​
+Storage
+Storage slots are grouped into pages of 128 consecutive slots. Access is warmed per page rather than per slot: the first SLOAD or SSTORE to a page pays the cold cost, and every other slot of that page is warm for the rest of the transaction.
+Storage layouts that Solidity already produces benefit without changes, since state variables, struct fields, and array elements occupy consecutive slots. Layouts that scatter slots across pages are not penalized; each page pays its own cold cost.
+See Storage pages for the gas schedule, and MIP-8 for the specification.
+​
+Transactions
+Transactions are charged based on gas limit rather than gas usage, i.e. total gas deducted from the sender’s balance is value + gas_bid * gas_limit. As discussed in Gas in Monad, this is a DoS-prevention measure for asynchronous execution.
+Consensus and execution utilize the Reserve Balance mechanism to ensure that all transactions included in consensus can be paid for. This mechanism places light restrictions on transaction inclusion at consensus time, and defines select conditions under which a transaction will revert at execution time.
+Due to the Reserve Balance mechanism, you may see transactions in the blockchain which ultimately fail due to trying to spend too much MON relative to account balance. These transactions still pay for gas and are valid transactions whose result is execution reversion. This isn’t a protocol difference, as many reverting Ethereum transactions are included in the chain, but it may be different from expectation. Longer discussion.
+Transaction type 3 (EIP-4844 aka blob transactions) is not supported.
+There is no global mempool. For efficiency, transactions are forwarded to the next few leadersas described in Local Mempool.
+​
+EIP-7702 Delegation
+If an EOA is EIP-7702-delegated, its balance cannot be lowered below 10 MON due to the Reserve Balance rules. If the delegation is removed, dipping below 10 MON is allowed. Discussion.
+If an EOA is EIP-7702-delegated, when it is called as a smart contract, the CREATE and CREATE2 opcodes are banned. Discussion.
+​
+Historical Data
+Due to Monad’s high throughput, full nodes do not provide access to arbitrary historic state, as this would require too much storage. See Historical Data for a fuller discussion.
+​
+RPC
+See: RPC Differences
+
+
+
+
+
+
+Tooling and Infrastructure
+
+
+Copy page
+
+
+The most popular Ethereum tools and infrastructure providers support Monad. The enclosing pages survey each category of tools and attempt a feature comparison.
+See also the protocols repo for a listing of contract addresses for each protocol.
+Analytics
+Tools for understanding app activity on Monad
+Block Explorers
+View accounts and transactions; read and write contracts
+Card Issuing
+Issue debit, prepaid, and credit cards that spend on-chain stablecoins
+Cross-Chain
+Bridges and protocols for cross-chain communication
+Custody
+Institutional-grade custody solutions for secure asset management
+DEX Aggregators
+Route swaps across on-chain venues for the best available rate
+Earn/Yield Infrastructure
+Vaults, strategies, and APIs for embedding onchain yield
+Indexers
+Common transformations for blockchain data + custom calculators
+Onramps
+Ways to convert between fiat and crypto
+Oracles
+Data feeds bringing off-chain information on-chain
+Payment Orchestrators
+Unified APIs that route stablecoin and fiat flows across providers and chains
+Privacy
+Private balances and transfers using MPC and zero-knowledge proofs
+RPC Providers
+Endpoints for interacting with Monad
+Toolkits
+Development frameworks and tools for building on Monad
+Wallets
+Tools for storing private keys, signing transactions, and managing assets
+Wallet Infrastructure
+Embedded wallets and smart accounts
+
+
+
+
+
+
+Use an Indexer
+
+
+Copy page
+
+
+GhostGraph
+Index transfers with GhostGraph
+Envio
+Index transfers for a telegram bot using Envio
+Envio HyperSync
+Query token data with Envio HyperSync
+QuickNode Streams
+Index transfers using QuickNode Streams
+Verify a smart contract on Monad using Hardhat
+Previous
+How to index token transfers with GhostGraph
+
+
+
+
+
+
+x402 on Monad: Set Up a Payable HTTP Endpoint
+
+
+Copy page
+
+
+x402 on Monad: set up a payable HTTP endpoint on mainnet or testnet, build an app with the Monad x402 facilitator, and use the facilitator API.
+
+
+This guide shows how to set up payable endpoints using x402 payments and Monad’s facilitator. It works on Monad testnet/mainnet.
+​
+What is x402?
+x402 is the HTTP 402 “Payment Required” status code reborn as a minimal protocol for internet‑native micropayments.
+Instead of subscriptions or paywalls that require accounts, x402 lets any HTTP endpoint become instantly payable:
+Client requests a resource
+Server responds 402 with a small JSON payment requirement
+Client signs a payment authorization and resends the request
+Server verifies and serves the content
+​
+Beyond legacy limitations
+x402 is designed for a modern internet economy, solving key limitations of legacy systems:
+Reduce fees and friction: Direct onchain payments without intermediaries, high fees, or manual setup.
+Micropayments & usage-based billing: Charge per call or feature with simple, programmable pay-as-you-go flows.
+Machine-to-machine transactions: Let AI agents pay and access services autonomously with no keys or human input needed.
+​
+Why x402 on Monad?
+Monad is a fully EVM‑compatible Layer 1 with:
+10,000 TPS
+~0.3s block times
+Single‑slot finality
+Parallel execution
+Extremely low fees
+These properties make Monad an ideal environment for true micropayments and agent-to-agent commerce. Payments settle instantly at low cost and avoid mempool congestion, perfect when many AI agents pay per API call.
+​
+Core Flow (Direct Payment)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Monad Chain
+Server
+Client
+Monad Chain
+Server
+Client
+Sign authorization
+(local, no tx)
+GET /premium-content
+402 Payment Required + requirements JSON
+GET /premium-content
+(PAYMENT-SIGNATURE header)
+transferWithAuthorization()
+tx confirmed
+200 OK + content
+​
+Facilitator Flow (Recommended for Production)
+A facilitator service is optional but recommended in production. Facilitators can batch transactions, cover gas, handle refunds, and simplify client logic.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Monad Chain
+Facilitator
+Server
+Client
+Monad Chain
+Facilitator
+Server
+Client
+Facilitator is optional but solves gas,
+refunds, batching, and replay protection
+Sign authorization
+(local, no tx)
+GET /premium-content
+402 + requirements
+GET /premium-content
+(PAYMENT-SIGNATURE header)
+POST /verify
+{ isValid: true }
+200 + resource
+POST /settle
+transferWithAuthorization()
+tx confirmed
+{ success, txHash }
+​
+Building an x402-based app using Monad x402 facilitator
+​
+Prerequisites
+Node.js 18+
+An EVM wallet
+Access to Monad testnet funds (USDC test tokens below)
+Monad Facilitator only supports x402 version 2 and above.
+Migration guide that explains the differences: https://docs.x402.org/guides/migration-v1-to-v2
+How to get USDC tokens on Monad testnet
+
+
+​
+Step 1: Initialize a Next.js App
+Create a new Next.js project:
+npx create-next-app@latest my-x402-app
+When prompted, select the following options:
+✅ TypeScript
+✅ ESLint
+✅ Tailwind CSS
+✅ src/ directory
+✅ App Router
+✅ Customize default import alias: @/* (default)
+Navigate to your project:
+cd my-x402-app
+Install the x402 packages:
+Use @x402/evm >= 2.22.0. It ships built-in Monad mainnet USDC config with the correct EIP-712 domain name and references the correct upto proxy. See Supported payment schemes for details.
+npm install @x402/core @x402/evm @x402/fetch @x402/next
+Create a .env.local file for your environment variables:
+touch .env.local
+​
+Step 2: Create a payTo address
+A payTo address is used to receive payments and interact with the blockchain from your backend.
+Copy the wallet address and add it to your .env.local file as PAY_TO_ADDRESS
+PAY_TO_ADDRESS=0xYourWallet
+​
+Step 3: Create a server side payable endpoint
+src/app/api/premium/route.ts
+import { NextResponse } from "next/server";
+import { withX402, type RouteConfig } from "@x402/next";
+import { x402ResourceServer, HTTPFacilitatorClient } from "@x402/core/server";
+import { ExactEvmScheme } from "@x402/evm/exact/server";
+import type { Network } from "@x402/core/types";
+
+
+// Monad Testnet configuration
+const MONAD_NETWORK: Network = "eip155:10143";
+const MONAD_USDC_TESTNET = "0x534b2f3A21130d7a60830c2Df862319e593943A3";
+
+
+// Monad Facilitator URL
+const FACILITATOR_URL = "https://x402-facilitator.molandak.org"; 
+
+
+if (!process.env.PAY_TO_ADDRESS) {
+  throw new Error("PAY_TO_ADDRESS environment variable is required");
+}
+const PAY_TO = process.env.PAY_TO_ADDRESS;
+
+
+// Create facilitator client for Monad
+const facilitatorClient = new HTTPFacilitatorClient({ url: FACILITATOR_URL });
+
+
+// Create and configure x402 resource server
+const server = new x402ResourceServer(facilitatorClient);
+
+
+// Monad testnet USDC is not in @x402/evm's built-in asset table, so register
+// it here. Mainnet (eip155:143) is built in since 2.22.0 and needs no parser.
+const monadScheme = new ExactEvmScheme();
+monadScheme.registerMoneyParser(async (amount: number, network: string) => {
+  if (network === MONAD_NETWORK) {
+    // Convert decimal amount to USDC smallest units (6 decimals).
+    // `Math.floor(amount * 1_000_000)` is safe up to ~9 billion USDC
+    // (~9 quadrillion atomic units) — bounded by JS Number's 2^53 precision.
+    // For tokens with 18 decimals or very large balances, use `BigInt` to avoid
+    // precision loss, e.g.:
+    //   BigInt(Math.round(amount * 1e6)).toString()   // USDC, 6 decimals
+    //   (BigInt(Math.round(amount * 1e9)) * 1_000_000_000n).toString()  // 18d, ≤9 fractional digits
+    const tokenAmount = Math.floor(amount * 1_000_000).toString();
+    return {
+      amount: tokenAmount,
+      asset: MONAD_USDC_TESTNET, // Raw address for EIP-712 verifyingContract
+      extra: {
+        name: "USDC",
+        version: "2",
+      },
+    };
+  }
+  return null; // Use default parser for other networks
+});
+
+
+// Register Monad network with custom scheme
+server.register(MONAD_NETWORK, monadScheme);
+
+
+// Route configuration
+const routeConfig: RouteConfig = {
+  accepts: {
+    scheme: "exact",
+    network: MONAD_NETWORK,
+    payTo: PAY_TO,
+    price: "$0.001",
+  },
+  resource: "http://localhost:3000/api/premium", // Use relative path to avoid host mismatch
+};
+
+
+// Handler that returns full article content
+async function handler(request: NextRequest) {
+  return NextResponse.json({
+    content: "Return premium content",
+    unlockedAt: new Date().toISOString(),
+  });
+}
+
+
+// Export GET method wrapped with x402 payment protection
+export const GET = withX402(handler, routeConfig, server);
+​
+Step 4: Client-side setup (consuming paid endpoint)
+Below is an example of consuming the paid endpoint using a Next.js app, however the endpoint can be consumed via an agent script as well.
+src/app/page.tsx
+"use client";
+
+
+import { useState, useCallback, useEffect } from "react";
+import { useAccount, useWalletClient } from "wagmi";
+import { wrapFetchWithPayment } from "@x402/fetch";
+import { ExactEvmScheme } from "@x402/evm";
+import { x402Client } from "@x402/core/client";
+
+
+// x402 configuration
+const x402Config = {
+  chainId: "eip155:10143" as const,
+  usdcAddress: "0x534b2f3A21130d7a60830c2Df862319e593943A3", // MONAD USDC TESTNET
+  facilitator: "https://x402-facilitator.molandak.org", // MONAD FACILITATOR URL
+  price: "0.001", // USDC
+};
+
+
+export default function Home() {
+  const { isConnected, address } = useAccount();
+  const { data: walletClient } = useWalletClient();
+  const [message, setMessage] = useState("Pay $0.001 USDC to unlock premium content");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+
+  // This function allows signing a message, and pay USDC gaslessly. 
+  const handleUnlock = useCallback(async () => {
+    if (!walletClient || !address) {
+      setError("Please connect your wallet first");
+      return;
+    }
+
+
+    setIsLoading(true);
+    setError(null);
+
+
+    try {
+      // Create EVM signer compatible with x402 ClientEvmSigner interface
+      const evmSigner = {
+        address: address as `0x${string}`,
+        signTypedData: async (message: {
+          domain: Record<string, unknown>;
+          types: Record<string, unknown>;
+          primaryType: string;
+          message: Record<string, unknown>;
+        }) => {
+          return walletClient.signTypedData({
+            domain: message.domain as Parameters<typeof walletClient.signTypedData>[0]["domain"],
+            types: message.types as Parameters<typeof walletClient.signTypedData>[0]["types"],
+            primaryType: message.primaryType,
+            message: message.message,
+          });
+        },
+      };
+
+
+      // Create the Exact EVM scheme for signing
+      const exactScheme = new ExactEvmScheme(evmSigner);
+
+
+      // Create x402 client and register the scheme
+      const client = new x402Client()
+        .register(x402Config.chainId, exactScheme);
+
+
+      console.log("x402 client configured for network:", x402Config.chainId);
+
+
+      // Wrap fetch with x402 payment capability
+      const paymentFetch = wrapFetchWithPayment(fetch, client);
+
+
+      console.log("Making payment request to /api/article...");
+
+
+      // Make request to protected endpoint
+      const response = await paymentFetch("/api/premium", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+
+      if (!response.ok) {
+        // Try to parse x402 payment-required header for detailed error
+        const paymentHeader = response.headers.get("payment-required");
+
+
+        if (paymentHeader && response.status === 402) {
+          try {
+            const paymentData = JSON.parse(atob(paymentHeader));
+            console.error("Payment error details:", paymentData);
+
+
+            // Extract user-friendly error message
+            if (paymentData.error?.includes("insufficient_funds")) {
+              throw new Error("INSUFFICIENT_FUNDS");
+            }
+            if (paymentData.error?.includes("unexpected_error")) {
+              throw new Error("UNEXPECTED_ERROR");
+            }
+            if (paymentData.error) {
+              throw new Error(paymentData.error);
+            }
+          } catch (e) {
+            if (e instanceof Error && e.message === "INSUFFICIENT_FUNDS") {
+              throw e;
+            }
+            // Failed to parse header, continue to generic error
+          }
+        }
+
+
+        const errorText = await response.text().catch(() => "");
+        let errorData: Record<string, unknown> = {};
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          // Not JSON
+        }
+        throw new Error(
+          errorData.error as string ||
+          errorData.details as string ||
+          `Request failed: ${response.status}`
+        );
+      }
+
+
+      const data = await response.json();
+
+
+      // Cache the unlocked content in LocalStorage
+      localStorage.setItem(
+        "premimum_content_unlocked",
+        JSON.stringify({
+          content: data.content,
+          timestamp: Date.now(),
+        })
+      );
+    } catch (err) {
+      console.error("Unlock error:", err);
+      const message = err instanceof Error ? err.message : "Failed to unlock article";
+
+
+      // Map technical errors to user-friendly messages
+      if (
+        message.includes("User rejected") ||
+        message.includes("User denied") ||
+        message.includes("user rejected")
+      ) {
+        setError("CANCELLED");
+      } else if (message === "INSUFFICIENT_FUNDS" || message.includes("insufficient_funds")) {
+        setError("INSUFFICIENT_FUNDS");
+      } else if (message === "UNEXPECTED_ERROR" || message.includes("unexpected_error")) {
+        setError("UNEXPECTED_ERROR");
+      } else {
+        setError(message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [walletClient, address]);
+
+
+  return (
+    <main className="min-h-screen bg-zinc-950 flex items-center justify-center p-6">
+      <div className="max-w-md w-full space-y-6">
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl font-bold text-white">x402 on Monad</h1>
+          <p className="text-zinc-400 text-sm">
+            Micropayments via the Monad facilitator.{" "}
+            <a href="https://docs.monad.xyz/guides/x402-guide" className="text-violet-400 hover:underline">
+              Docs
+            </a>
+          </p>
+        </div>
+
+
+        <button
+          onClick={handleUnlock}
+          disabled={status === "loading"}
+          className="w-full py-3 px-4 bg-violet-600 hover:bg-violet-500 disabled:bg-violet-800 disabled:cursor-wait text-white font-medium rounded-lg transition-colors"
+        >
+          {status === "loading" ? "Processing..." : "Pay & Unlock Content"}
+        </button>
+
+
+        <div className={`p-4 rounded-lg text-sm ${
+          status === "error" ? "bg-red-950 text-red-300" :
+          status === "success" ? "bg-green-950 text-green-300" :
+          "bg-zinc-900 text-zinc-300"
+        }`}>
+          {message}
+        </div>
+      </div>
+    </main>
+  );
+}
+​
+Running Your x402 App
+Now you’re ready to test your x402 payment flow:
+Start your development server:
+npm run dev
+Open http://localhost:3000 in your browser
+Click “Pay & Unlock Content”
+Connect your wallet
+Approve the USDC payment
+See the content unlock instantly!
+​
+Facilitator API
+For developers who are interested in using the barebones Facilitator API, here are the supported endpoints with examples.
+Facilitator URL: https://x402-facilitator.molandak.org Network support: Mainnet (eip155:143, USDC 0x754704Bc059F8C67012fEd69BC8A327a5aafb603) and Testnet (eip155:10143, USDC 0x534b2f3A21130d7a60830c2Df862319e593943A3).
+On @x402/evm >= 2.22.0, mainnet USDC resolves from the SDK’s built-in asset table. Testnet has no built-in entry and requires the custom money parser shown in the quickstart above.
+​
+Supported payment schemes
+The Monad facilitator advertises two x402 v2 schemes via GET /supported:
+Scheme ID        When to use        Mechanism
+v2-eip155-exact        Fixed-price payments (default for USDC)        EIP-3009 transferWithAuthorization direct on the token, or Permit2-proxy fallback for non-EIP-3009 tokens
+v2-eip155-upto        Variable-amount / metered payments (LLM tokens, bandwidth, compute)        Permit2-only — client signs a maximum, facilitator settles for actual usage ≤ max. Supports $0 settlement (no on-chain tx)
+For USDC on Monad, exact is the recommended scheme per the x402 specification. Upto requires the canonical x402UptoPermit2Proxy at 0x4020A4f3b7b90ccA423B9fabCc0CE57C6C240002 (see Canonical Contracts) and an extra.facilitatorAddress advertised by the facilitator that the client must bind into the Permit2 witness.
+Use @x402/evm >= 2.12.0 for the upto scheme (>= 2.22.0 recommended). Versions 2.9.0–2.11.0 include the upto module but reference a proxy address that is not deployed on Monad (0x402039b3d6E6BEC5A02c2C9fd937ac17A6940002). Payments will fail at settlement with no clear error. The correct address (0x4020A4f3b7b90ccA423B9fabCc0CE57C6C240002) was first included in 2.12.0, and 2.22.0 references the same proxy while adding built-in Monad mainnet USDC config with the correct EIP-712 domain name.
+If you upgrade to a newer version in future, confirm it references the same proxy address before deploying to production.
+​
+Possible HTTP status codes
+In addition to the standard 200 / 4xx / 5xx codes, the facilitator may return:
+412 PRECONDITION_FAILED — Returned when a Permit2 payment cannot proceed because the user’s Permit2 allowance for the proxy contract is insufficient (PERMIT2_ALLOWANCE_REQUIRED). The client must approve the proxy via Permit2 and retry. Distinct from 400 (malformed body) and 402 (the resource server’s payment-required response).
+​
+GET /supported
+Returns supported networks, schemes, and signer addresses.
+const FACILITATOR_URL = "https://x402-facilitator.molandak.org";
+
+
+async function testSupported(): Promise<void> {
+  console.log("\n--- GET /supported ---");
+
+
+  const response = await fetch(`${FACILITATOR_URL}/supported`);
+  if (!response.ok) throw new Error(`Failed: ${response.status}`);
+
+
+  const data = await response.json();
+  console.log(JSON.stringify(data, null, 2));
+  return data;
+}
+​
+POST /verify
+Verify a payment signature.
+interface NetworkConfig {
+  chainId: Network;
+  name: string;
+  rpcUrl: string;
+  explorerUrl: string;
+  usdcAddress: `0x${string}`;
+  usdcDecimals: number;
+  chainIdNumber: number;
+}
+
+
+/**
+ * This function manually constructs and signs the EIP-712 typed data that
+ * the x402 client library handles automatically.
+ */
+async function testVerify(
+  account: ReturnType<typeof privateKeyToAccount>,
+  networkConfig: NetworkConfig
+): Promise<{ isValid: boolean; payload: any }> {
+  console.log("\n--- POST /verify ---");
+  const now = Math.floor(Date.now() / 1000);
+  const nonce = keccak256(toHex(Math.random().toString()));
+  const ACCOUNT_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+
+  // TransferWithAuthorization parameters (ERC-3009)
+  const authorization = {
+    from: ACCOUNT_ADDRESS, // Account that is paying
+    to: PAY_TO_ADDRESS, // Receiver address
+    value: "1000", // 0.001 USDC (6 decimals)
+    validAfter: (now - 60).toString(), // Start validity 60s in the past to handle clock skew
+    validBefore: (now + 900).toString(), // 15 minutes
+    nonce,
+  };
+
+
+  // EIP-712 domain - must match USDC contract's DOMAIN_SEPARATOR
+  const domain = {
+    name: "USDC",  // Monad USDC uses "USDC" (not "USD Coin")
+    version: "2",
+    chainId: BigInt(networkConfig.chainIdNumber),
+    verifyingContract: networkConfig.usdcAddress,
+  };
+
+
+  // EIP-712 type definition for TransferWithAuthorization
+  const types = {
+    TransferWithAuthorization: [
+      { name: "from", type: "address" },
+      { name: "to", type: "address" },
+      { name: "value", type: "uint256" },
+      { name: "validAfter", type: "uint256" },
+      { name: "validBefore", type: "uint256" },
+      { name: "nonce", type: "bytes32" },
+    ],
+  };
+
+
+  const message = {
+    from: authorization.from,
+    to: authorization.to,
+    value: BigInt(authorization.value),
+    validAfter: BigInt(authorization.validAfter),
+    validBefore: BigInt(authorization.validBefore),
+    nonce: authorization.nonce as `0x${string}`,
+  };
+
+
+  const signature = await account.signTypedData({
+    domain,
+    types,
+    primaryType: "TransferWithAuthorization",
+    message,
+  });
+
+
+  const requestBody = {
+    x402Version: 2,
+    payload: {
+      authorization,
+      signature,
+    },
+    // `resource` (and its `url` / `description` / `mimeType` fields) is OPTIONAL
+    // in x402 v2; the facilitator only requires `payload` + `accepted`. Include it
+    // when the resource server wants its identity recorded alongside the settlement.
+    resource: {
+      url: "http://test/resource",
+      description: "Test resource",
+      mimeType: "application/json",
+    },
+    accepted: {
+      scheme: "exact",
+      network: networkConfig.chainId,
+      amount: authorization.value,
+      asset: networkConfig.usdcAddress,
+      payTo: authorization.to,
+      maxTimeoutSeconds: 300,
+      extra: {
+        name: "USDC",
+        version: "2",
+      },
+    },
+  };
+
+
+  const response = await fetch(`${FACILITATOR_URL}/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(requestBody),
+  });
+
+
+  const data = await response.json();
+  console.log(JSON.stringify(data, null, 2));
+
+
+  return { isValid: data.isValid, payload: requestBody };
+}
+​
+POST /settle
+Execute the payment on-chain. Facilitator pays gas.
+interface NetworkConfig {
+  chainId: Network;
+  name: string;
+  rpcUrl: string;
+  explorerUrl: string;
+  usdcAddress: `0x${string}`;
+  usdcDecimals: number;
+  chainIdNumber: number;
+}
+
+
+/** POST /settle - Execute the payment on-chain. Facilitator pays gas. */
+async function testSettle(
+  payload: any,
+  networkConfig: NetworkConfig
+): Promise<void> {
+  console.log("\n--- POST /settle ---");
+
+
+  const response = await fetch(`${FACILITATOR_URL}/settle`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+
+  const data = await response.json();
+  console.log(JSON.stringify(data, null, 2));
+
+
+  if (data.success && data.transaction) {
+    // Transaction success
+  } else if (data.errorReason) {
+    console.log(`Failed: ${data.errorReason}`);
+  }
+}
+​
+What’s Next?
+You’ve successfully built an x402 payment-enabled app on Monad! Here are some ideas to extend your implementation:
+Add more payable endpoints - Create different pricing tiers for various content or API calls
+Build AI agent integrations - Enable autonomous agents to pay for and access your APIs
+​
+Resources
+x402 Protocol Specification
+Monad Developer Discord
+Migration Guide: V1 to V2
+​
+Need Help?
+If you run into issues or have questions, join the Monad Developer Discord
+Happy building!
+
+
+
+
+ERC-8004 on Monad: Register Trustless Agents
+
+
+Copy page
+
+
+ERC-8004 (Trustless Agents) on Monad: register an agent in the Identity Registry, add feedback in the Reputation Registry, and see use cases and best practices.
+
+
+This guide shows how to register AI agents and build trustless agent interactions using ERC-8004 on Monad.
+​
+What is ERC-8004?
+ERC-8004 is an Ethereum standard for Trustless Agents that provides three on-chain registries for agent identity, reputation, and validation. It gives AI agents and agentic services (MCPs, APIs, etc) portable identity, verifiable track records, and cryptographic validation so they can operate as accountable economic actors.
+The standard enables:
+Identity Registry: Agents register with an ERC-721 NFT and agent card
+Reputation Registry: Immutable feedback system for agent interactions
+Validation Registry: Third-party verification of agent work
+​
+Key Benefits
+Portable Identity: Agents have persistent, transferable identities across platforms via ERC-721 tokens.
+Verifiable Reputation: Immutable on-chain feedback creates auditable track records for agents.
+Trust Without Intermediaries: Cryptographic validation enables trustless agent-to-agent interactions without any central entity.
+Economic Interoperability: Agents can discover, verify, and pay each other autonomously using x402.
+​
+Core Components
+​
+1. Identity Registry
+Each agent mints an ERC-721 token. The token ID is the agent’s unique identifier, and the token URI points to an “agent card” with:
+Name and description
+API endpoints (A2A Protocol, MCP, HTTP, etc.)
+Supported trust models
+DID/ENS identifiers
+Agent wallet address for payments, if available
+​
+2. Reputation Registry
+After interacting with an agent, clients submit structured feedback on-chain:
+Values measuring properties (e.g., uptime, success rate, quality)
+Tags for categorization (e.g., “fast”, “accurate”, “DeFi”)
+Optional feedbackURI for detailed off-chain reviews
+Content hash for data integrity
+Feedback is permanent and immutable - creating an auditable track record.
+​
+3. Validation Registry (coming soon)
+For high-stakes tasks, third-party validators can verify agent work on-chain. The registry is unopinionated about validation models (TEE, zkML, fraud proofs, etc.).
+​
+Interaction Flow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Agent B
+ERC-8004
+Agent A
+Client
+Registries
+Service
+Client
+Registries
+Service
+1. Register identity
+2. Discover agents
+3. Check reputation
+4. Service request + x402 payment
+5. Service response
+6. Submit feedback
+​
+Use Cases
+​
+Agentic Services Marketplace
+Oracles: Agents provide real-time data feeds (e.g., price feeds, weather, sports scores) that are discoverable via reputation.
+Market ratings & analytics: Specialized agents offer services such as risk assessment, credit scoring, and sentiment analysis.
+APIs as agents: Any API—such as weather, translation, or image processing—can register as an agent, making them both discoverable and payable.
+Reputation-gated access: Services can filter or restrict clients based on their on-chain reputation histories.
+​
+Agent Routing Systems
+Instead of implementing services natively, agents call routing systems that dynamically select the best service provider based on:
+Latency: Route to the fastest available agent for time-sensitive tasks
+Price: Find the most cost-effective provider for bulk operations
+Reputation: Select highly-rated agents for critical operations
+Specialization: Match task requirements to agent capabilities
+​
+AI Agent Marketplaces
+Agents register services with pricing
+Clients discover agents via reputation
+Automated service discovery and payment
+​
+Autonomous Service Networks
+Agents hire other agents for subtasks
+Reputation-based trust decisions
+Automatic feedback loops
+​
+DeFi Agent Protocols
+Portfolio management agents
+Trading strategy agents
+Yield optimization agents
+​
+Enterprise Agent Ecosystems
+Internal agent directories
+Cross-organization agent collaboration
+Compliance and audit trails
+​
+Best Practices
+​
+Registration
+Use descriptive agent names and thorough documentation.
+Provide multiple endpoint types for improved flexibility.
+Keep agent cards updated as capabilities change.
+Use ENS names for easier discovery.
+​
+Reputation Management
+Submit honest feedback after every interaction
+Use consistent tag taxonomies
+Include detailed reviews for significant interactions
+Respond to feedback on your agents
+​
+Security
+Verify agent signatures before payments
+Check reputation before high-value transactions
+Use validation registry for critical operations
+Monitor feedback for your agents
+You can find more here.
+​
+Advanced Features
+​
+Cross-Chain Agent Discovery
+// Bridge agent identity across chains
+import { CCIPRouter } from "@chainlink/ccip";
+
+
+async function bridgeAgentToMonad(agentId: string, sourceChain: string) {
+  // Query agent card from source chain
+  // Register mirror on Monad
+  // Link reputation data
+}
+​
+Reputation Aggregation
+// Build custom reputation scoring
+function calculateTrustScore(feedback: Feedback[]): number {
+  const recentWeight = 0.7;
+  const historicalWeight = 0.3;
+  
+  const recent = feedback.slice(0, 10);
+  const historical = feedback.slice(10);
+  
+  const recentScore = average(recent.map(f => f.value));
+
+
+  const historicalScore = average(historical.map(f => f.value));
+  
+  return recentScore * recentWeight + historicalScore * historicalWeight;
+}
+​
+Validation Integration
+// TEE-based validation (coming soon)
+async function validateWithTEE(
+  agentId: string,
+  task: any,
+  proof: any
+) {
+  // Submit to validation registry
+  // TEE verifies execution
+  // On-chain proof recorded
+}
+​
+Resources
+ERC-8004 Specification
+ERC-8004 GitHub
+agent0 SDK - TypeScript and Python SDKs, with guides
+8004scan.io - Browse agents and reputation
+Agentscan.info - Browse agents and reputation
+8004agents.ai - Browse agents and reputation
+Monad Developer Discord
+​
+Contract Addresses
+Identity Registry:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432
+Reputation Registry:0x8004BAa17C55a88189AE136b182e5fdA19dE9b63
+Validation Registry: (coming soon)
+​
+Need Help?
+Join the Monad Developer Discord or reach out to team@8004.org
+Happy building! 🤖
+
+
+
+
+How to add swaps to your app using Kuru Flow
+
+
+Copy page
+
+
+Your application may need to allow users to swap between two assets. You want your users to get the best price available across the ecosystem.
+Aggregators check many liquidity sources and find the best price. Integrating an aggregator API can thus be a convenient and efficient means of enabling swapping in your app.
+In this guide, we will examine integrating one such aggregator, Kuru Flow. You’ll learn how to integrate Kuru Flow into a frontend application—from authentication to fetching quotes and executing swaps.
+​
+Requirements
+Before you begin, ensure you have the following:
+A frontend framework with wallet connection (React, Next.js, etc.)
+wagmi and viem for wallet interactions
+User wallet connected to Monad mainnet (chain ID 143)
+​
+1. Configure Authentication
+We first need to get credentials to access the Kuru Flow API. Kuru Flow uses JWT tokens for API authentication.
+lib/kuru-flow.ts
+const KURU_FLOW_API = "https://ws.kuru.io";
+
+
+async function generateToken(userAddress: string) {
+  const response = await fetch(`${KURU_FLOW_API}/api/generate-token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_address: userAddress }),
+  });
+
+
+  return response.json();
+  // Returns: { token: string, expires_at: number, rate_limit: { rps: number, burst: number } }
+}
+​
+2. Get a Swap Quote
+The /api/quote endpoint calculates the best swap path and returns transaction data.
+The following parameters are supported:
+Parameter        Required        Description
+userAddress        Yes        User’s wallet address
+tokenIn        Yes        Token address (0x0 for native MON)
+tokenOut        Yes        Token address (0x0 for native MON)
+amount        Yes        Amount in smallest token units
+autoSlippage        No*        Set to true for automatic slippage calculation
+slippageTolerance        No*        Manual slippage in basis points (1-10000)
+referrerAddress        No        Your address to receive referral fees
+referrerFeeBps        No        Referral fee in basis points (0-10000)
+*Either autoSlippage: true OR slippageTolerance must be provided.
+We can write a small function to interact with the quote API:
+lib/kuru-flow.ts
+const KURU_FLOW_API = "https://ws.kuru.io";
+
+
+// Your wallet address to receive referral fees
+const REFERRER_ADDRESS = "0xYOUR_WALLET_ADDRESS_HERE";
+const REFERRER_FEE_BPS = 50; // 0.5%
+
+
+async function getQuote(
+  userAddress: string,
+  tokenIn: string,
+  tokenOut: string,
+  amount: string,
+  token: string
+) {
+  const response = await fetch(`${KURU_FLOW_API}/api/quote`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      userAddress,
+      tokenIn,
+      tokenOut,
+      amount,
+      autoSlippage: true,
+      referrerAddress: REFERRER_ADDRESS,
+      referrerFeeBps: REFERRER_FEE_BPS,
+    }),
+  });
+
+
+  return response.json();
+}
+​
+Response Structure
+lib/kuru-flow.ts
+export interface QuoteResponse {
+  type: string;
+  status: "success" | "error";
+  output: string;           // Expected output amount (in wei)
+  minOut: string;           // Minimum output with slippage
+  transaction: {
+    to: string;             // Router contract address
+    calldata: string;       // Transaction calldata (WITHOUT 0x prefix!)
+    value: string;          // Native MON amount (non-zero when swapping native MON)
+  };
+  gasPrices: {
+    slow: string;
+    standard: string;
+    fast: string;
+    rapid: string;
+    extreme: string;
+  };
+  message?: string;         // Error message if status is "error"
+}
+The calldata field does NOT include the 0x prefix. You must add it before sending the transaction.
+​
+3. Check Token Allowance (ERC20 Only)
+Before executing a swap with ERC20 tokens, we should verify that the router has permission to spend the user’s tokens.
+Native MON does not require approval. Skip this step when swapping native MON.
+components/SwapCard.tsx
+import { useState } from "react";
+import { useAccount, useReadContract } from "wagmi";
+import { parseUnits } from "viem";
+import type { QuoteResponse } from "@/lib/kuru-flow";
+
+
+// Token addresses
+const NATIVE_MON = "0x0000000000000000000000000000000000000000" as const;
+const USDC = "0x754704Bc059F8C67012fEd69BC8A327a5aafb603" as const;
+
+
+const ERC20_ABI = [
+  {
+    name: "allowance",
+    type: "function",
+    stateMutability: "view",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+] as const;
+
+
+// Inside your component:
+const { address } = useAccount();
+const [amount, setAmount] = useState("");
+const [quote, setQuote] = useState<QuoteResponse | null>(null);
+
+
+const tokenIn = USDC; // Example: swapping USDC
+const isNativeToken = tokenIn === NATIVE_MON;
+const amountWei = amount ? parseUnits(amount, 6) : BigInt(0);
+
+
+// Check allowance against router address from quote (skip for native MON)
+const { data: allowance } = useReadContract({
+  address: tokenIn,
+  abi: ERC20_ABI,
+  functionName: "allowance",
+  args: address && quote?.transaction?.to
+    ? [address, quote.transaction.to as `0x${string}`]
+    : undefined,
+  query: {
+    enabled: !isNativeToken, // Don't check allowance for native token
+  },
+});
+
+
+// Native tokens don't need approval
+const needsApproval = !isNativeToken && allowance !== undefined && amountWei > allowance;
+​
+4. Approve Token Spending (ERC20 Only)
+If allowance is insufficient for an ERC20 token, we should request approval before swapping.
+components/SwapCard.tsx
+import { encodeFunctionData } from "viem";
+import { useSendTransaction } from "wagmi";
+
+
+const APPROVE_ABI = [
+  {
+    name: "approve",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+  },
+] as const;
+
+
+// Inside your component:
+const { sendTransaction: sendApproveTx } = useSendTransaction();
+
+
+const handleApprove = () => {
+  if (!quote?.transaction?.to) return;
+
+
+  const data = encodeFunctionData({
+    abi: APPROVE_ABI,
+    functionName: "approve",
+    args: [quote.transaction.to as `0x${string}`, amountWei],
+  });
+
+
+  sendApproveTx({
+    to: tokenIn,
+    data,
+  });
+};
+Use viem’s encodeFunctionData instead of manual hex string manipulation for reliable ABI encoding.
+​
+5. Execute the Swap
+To submit the swap, we should use the transaction data from the quote response:
+components/SwapCard.tsx
+// Inside your component:
+const { sendTransaction: sendSwapTx } = useSendTransaction();
+
+
+const handleSwap = () => {
+  if (!quote || quote.status !== "success") return;
+
+
+  // IMPORTANT: Add 0x prefix to calldata
+  const calldata = quote.transaction.calldata.startsWith("0x")
+    ? quote.transaction.calldata
+    : `0x${quote.transaction.calldata}`;
+
+
+  sendSwapTx({
+    to: quote.transaction.to as `0x${string}`,
+    data: calldata as `0x${string}`,
+    value: BigInt(quote.transaction.value || "0"),
+  });
+};
+​
+Token Addresses and Decimals (Mainnet)
+Token        Address        Decimals        Notes
+MON (native)        0x0000000000000000000000000000000000000000        18        No approval needed
+USDC        0x754704Bc059F8C67012fEd69BC8A327a5aafb603        6        Requires approval
+Be careful with token decimals when formatting output. USDC uses 6 decimals, not 18.
+import { formatEther, formatUnits } from "viem";
+
+
+// WRONG - assumes 18 decimals
+formatEther(BigInt(quote.output))  // Shows 0.000000002301622011
+
+
+// CORRECT - use actual token decimals
+formatUnits(BigInt(quote.output), 6)  // Shows 2301.62
+​
+Referral Fee System
+Kuru features a referral system. As the referrer, we can earn fees on every swap by including your referrer details in quote requests.
+lib/kuru-flow.ts
+// Replace with YOUR wallet address to receive referral fees
+export const REFERRER_ADDRESS = "0xYOUR_WALLET_ADDRESS_HERE";
+
+
+// Fee in basis points (50 = 0.5%, 100 = 1%)
+export const REFERRER_FEE_BPS = 50;
+Example fee calculations at 50 bps (0.5%):
+Swap Output        Fee Amount
+100 USDC        0.5 USDC
+500 USDC        2.5 USDC
+1000 USDC        5 USDC
+Replace 0xYOUR_WALLET_ADDRESS_HERE with your actual wallet address before deploying. The referrerAddress must be a valid Ethereum address or transactions will fail.
+​
+Error Handling
+Along the way, we might run into errors. Here is how to interpret them:
+Status Code        Meaning
+400        Bad request - check parameters
+401        Unauthorized - invalid or expired token
+429        Rate limited - wait before retrying
+500        Server error - retry later
+​
+Common Mistakes
+Missing 0x prefix - Add 0x prefix to calldata before sending
+Invalid referrer address - Must be a valid Ethereum address
+Skipping approval for ERC20 - ERC20 tokens require approval before swap (native MON does not)
+Wrong decimals - USDC has 6 decimals, MON has 18
+Zero value for native MON swaps - When swapping native MON, the transaction value must be set to the swap amount
+​
+Next Steps
+Try the Live Demo to see Kuru Flow in action
+Clone the Example Repository for a complete working implementation
+Read the Kuru Flow Overview for more details
+See Monad Network Information for RPC endpoints and chain configuration
+
+
+
+
+
+
+Monad Architecture
+
+
+Copy page
+
+
+This section surveys Monad’s major architectural innovations.
+Concepts
+Explaining high level themes (async io and pipelining) that recur in Monad
+Consensus
+Algorithms for maintaining a globally distributed, decentralized validator set
+Execution
+Algorithms for executing EVM transactions efficiently
+Real-time Data
+Consuming recent blockchain data as quickly as possible
+Transaction Lifecycle
+Mapping the path of a transaction in Monad
+The first Monad client is built by Category Labs and is written from scratch in C++ and Rust. Check out the codebase:
+monad-bft (consensus client)
+monad (execution client)
+
+
+
+
+
+
+EIP-7702 on Monad: How EOA Delegation Works
+
+
+Copy page
+
+
+EIP-7702 is supported on Monad with the same workflow as Ethereum. Learn how EOA delegation works, the Monad-specific details, and answers to common questions.
+
+
+​
+Summary
+EIP-7702 is supported on Monad with the same workflow as in Ethereum: users sign a message authorizing the delegation to a specific account, which they or someone else can submit using transaction type 0x04. After that occurs, the EOA becomes “delegated”, i.e. it can be called like a smart contract account with code equal to the account it has delegated to.
+EIP-7702-delegated accounts behave the same on Monad as on Ethereum in most cases.
+The two main nuances are:
+If an EOA is EIP-7702-delegated, transactions that would reduce its balance to below 10 MON will unconditionally revert.
+If the balance is below 10 MON but is unchanged or increased by this transaction, the transaction succeeds
+If the delegation is removed, dipping below 10 MON is allowed under certain conditions
+Details
+When the EOA is treated like a smart contract, that code cannot call CREATE or CREATE2. Details
+​
+EIP-7702 Primer
+EIP-7702 allows Externally Owned Accounts (EOAs) to add code to themselves, granting themselves the ability to add new capabilities previously reserved for smart contract accounts, such as transaction batching, gas sponsorship, and alternative authentication.
+To do this, the EOA signs an authorization designating a specific address as the source of its code. EIP-7702 introduces a new transaction type (type 0x04) that submits this authorization. The authorization can be submitted by the EOA themselves, or by anyone else.
+EIP-7702 enables account abstraction directly on an EOA. It is an extension of EIP-4337, which introduced standards for smart contract wallets with flexible validation logic, but which had to assume a separate UserOp mempool and bundler infrastructure for submitting transactions.
+In Ethereum’s account-based model, there are two separate roles - “fee payer” (transaction submitter, i.e. who pays for gas to execute a transaction) and “asset owner” (spend authorizer, i.e. who holds keys with the power to spend from a balance). Originally, EOAs played both roles. Under EIP-4337, the roles were split - a smart contract wallet holds title to assets (and has its own logic for validating that spend was authorized), but fees must still be paid by an EOA, hence the roles are definitively split.
+With EIP-7702, EOAs are allowed to have code, thus allowing the same account to play both roles again.
+In essence, EIP-7702 makes it possible for today’s EOAs to gain smart wallet-like powers such as multisig, social recovery, session keys, and gas sponsorship without abandoning their current accounts, bridging the gap between the old EOA model and the future of full account abstraction.
+​
+EIP-7702 on Monad
+EIP-7702-delegated accounts behave the same on Monad as on Ethereum in most cases.
+The two main nuances are:
+If an EOA is EIP-7702-delegated, transactions that would reduce its balance to below 10 MON will unconditionally revert.
+If the balance is below 10 MON but is unchanged or increased by this transaction, the transaction succeeds
+If the delegation is removed, dipping below 10 MON is allowed under certain conditions
+Details
+When the EOA is treated like a smart contract, that code cannot call CREATE or CREATE2. Details
+​
+Delegated EOAs can’t dip below 10 MON
+In Monad, the Reserve Balance rules carve out a budget of 10 MON for consensus-time balance checks for inflight transactions from each EOA. (“Inflight” means transactions seen by consensus since the delayed view of state, 3 blocks ago.)
+Execution protects that budget by reverting if the balance of any EOA would dip below 10 MON by an amount greater than the transaction’s max gas fee. (“Dip below” means “decrement and drop below”; if an EOA’s MON balance is unchanged, that doesn’t count as dipping.)
+An exception is made to this execution-time policy for undelegated EOAs where a transaction hasn’t been seen from this EOA in several blocks. That exception is what allows undelegated EOAs to submit transactions that would cause their balance to dip below 10 MON by amounts greater than the transaction’s max gas fee.
+However, this exception can’t be made for EIP-7702-delegated accounts. Delegation breaks the invariant that an EOA’s balance can only be reduced by transactions signed by that EOA. There is not a reliable way to be sure (at the time of consensus) that another inflight transaction hasn’t spent funds from an EIP-7702-delegated account, therefore the exception made for undelegated accounts doesn’t apply to delegated accounts.
+An delegated account may be emptied by undelegating first.
+To be clear, EIP-7702-delegated accounts are not required to have a 10 MON balance. For example, a delegated EOA A with a balance of 5 MON can still be called by a gas sponsor, and the transaction will succeed as long as A ends with 5 MON or more still.
+This is discussed further here.
+​
+Delegated contract code cannot call CREATE/CREATE2
+There is another difference: when contract code is executing in the context of an EIP‑7702‑delegated EOA (for example, because a contract CALLs that EOA’s address), the CREATE and CREATE2 opcodes are not permitted. Any attempt to execute CREATE or CREATE2 in such a frame causes that call frame to revert, and the caller (if any) observes the call as failed (the CALL/DELEGATECALL/CALLCODE returns 0).
+This prevents delegated code from changing the EOA’s nonce in ways that would make it difficult to statically validate transactions from that account.
+In contrast, normal contract‑creation transactions sent from a delegated EOA (transactions with no to field, where the transaction data is treated as init code) are allowed and behave as on Ethereum.
+Other than those differences, EIP-7702-delegated accounts behave normally with respect to both ordinary transactions sent by the EOA, and transactions that treat the EOA as a smart contract.
+​
+FAQ
+What does an EIP-7702 (set code transaction) look like?
+
+
+Is it necessary for the EIP-7702 type transaction to be initiated by the EOA itself?
+
+
+How can I find out to which address EOA is currently delegating to?
+
+
+What if the EOA is pointing to another EOA which is also pointing to a smart contract?
+
+
+How do I clear the delegation on an EOA?
+
+
+Does the delegation expire?
+
+
+Is EIP-7702 compatible with ERC-4337?
+
+
+What happens if the EOA is pointing to a precompile address for code?
+
+
+Can you give me an example of submitting an EIP-7702 transaction using viem?
+
+
+
+
+Reserve Balance
+
+
+Copy page
+
+
+​
+Introduction
+The Reserve Balance mechanism is a set of light constraints - at consensus time on which transactions can be included, and at execution time on which transactions don’t revert - which allow Monad to simultaneously support asynchronous execution and EIP-7702.
+The Reserve Balance mechanism is designed to preserve safety under asynchronous execution without interfering with normal usage patterns. Most users and developers need not worry about the Reserve Balance constraints, however we provide the details here for those encountering corner cases.
+​
+Summary
+Asynchronous execution means that nodes achieve consensus on a block proposal prior to executing the transactions in that block. Execution is required to be completed in the next k (delay factor) blocks. (Currently k=3. NOTE: In the context of discussing block states and asynchronous execution, letter D is usually used to denote the same parameter.)
+Because consensus operates on a k-block delayed view of the global state, it is necessary to adjust the consensus and execution rules slightly to allow consensus to safely build and validate blocks that include only transactions whose gas costs can be paid for.
+Monad introduces the Reserve Balance mechanism to allow consensus and execution to collaborate across a multi-block lag to ensure that all EOAs must have enough MON in their account to pay for gas for any transaction included in the blockchain.
+Throughout this document, an inflight transaction refers to a transaction that has been included in a block less than k blocks ago.
+Here is a very brief summary of the rules:
+From the perspective of a particular EOA, MON spent from that EOA in the course of a transaction is partitioned into two parts: gas spend and value spend.
+In the case where the EOA was the sender:
+gas spend is gas_price * gas_limit;
+value spend is the value parameter on that transaction.
+In the case where the EOA wasn’t the sender (where they previously delegated via EIP-7702 and some other EOA submitted a transaction which called this EOA):
+gas spend is 0;
+value spend is whatever MON is sent out during the course of executing this EOA’s code.
+Let user_reserve_balance = 10 MON
+Execution time: during execution, transactions revert due to value spend when that account’s ending balance (before refunds) dips below user_reserve_balance, except in certain circumstances described below.
+Consensus time: For each account, consensus has a budget for the gas spend for all inflight transactions; this budget is user_reserve_balance (or the account’s balance from the lagged execution state, whichever is lower). The budget is further reduced if the first inflight transaction earned the exception mentioned above, by that transaction’s value spend. When performing block validity checks for block n, consensus checks that the budget is not exceeded.
+See also the formal definition in the Monad Initial Spec proposal from Category Labs.
+​
+Parameters
+Parameter        Value
+user_reserve_balance        10 MON
+​
+Why is reserve balance needed?
+Monad has asynchronous execution: consensus is allowed to progress with building and validating blocks without waiting for execution to catch up. Specifically, proposing and validating consensus block n only requires knowledge of the state obtained after applying block n-k.
+While asynchronous execution has performance benefits, it introduces a novel challenge: how is consensus supposed to know the validity of a block if it does not have the latest state?
+Let’s illustrate this challenge with an example (for our examples, we will use k = 3):
+Consensus is validating block 4, which contains a transaction t from Alice with the relevant fields as:
+sender=Alice, to=Bob, value=100, gas=1
+Consensus only has the state that was obtained by executing block 1:
+block=1, balances={Alice: 110}
+If consensus simply accepts block 4 as valid because Alice appears to have enough balance, it risks a safety failure. For instance, Alice may have already spent her balance in transaction t’ in block 2. This creates a denial-of-service (DoS) vector, as Alice could cause consensus to include many transactions for free.
+​
+First attempt at a solution
+One idea is for the consensus client to statically inspect transactions in blocks 2 and later, checking if Alice has spent any value in her transactions. This would let consensus reject block 4 as invalid if any transaction before t (such as t') in blocks 2, 3, or 4 originates from Alice and spends some value or gas.
+While this is a fine solution on the face of it, it suffers from two shortcomings:
+Suppose, as part of smart contract execution in blocks 2 or 3, Alice received a lot of currency. She would have had enough balance to pay for transaction t despite t' existing, if only we had the latest state. So, rejecting transactions based solely on static checks is overly restrictive.
+It is not only restrictive, it is also not safe with EIP-7702. With EIP-7702, Alice could have her account delegated to a smart contract, which can transfer out currency from Alice’s account in a way that is not statically inspectable by consensus. Concretely in our example, Alice does not need to send a transaction like t' from her account in order to spend currency from her account, if her account is delegated. A spend could potentially be triggered by a transaction submitted by anyone else. So our static check would not succeed and it may be unsafe to accept block 4 as valid even if we don’t see any other transaction from Alice in blocks 2, 3 and 4.
+​
+Reserve balance as the solution
+​
+Simple version
+Intuitively, the core idea of reserve balance is as follows: if consensus and execution agree ahead of time that, for each EOA, execution will prevent the ending balance from dropping below a certain pre-determined threshold known to consensus (user_reserve_balance), up to the sender’s gas spend allowance, then consensus can safely include a series of transactions whose running gas spend stays below user_reserve_balance, without knowing the latest state and without being vulnerable to the DoS vector described above.
+This concept can be generalized as follows:
+Execution time: after execution (before gas refunds), a reserve-balance check is applied to the ending balance. For a non-sender account, the ending balance must not be lower than min(balance at transaction start, user_reserve_balance). For the sender, the ending balance may be lower by at most the transaction’s gas spend (unless the emptying exception below applies). Excessive intermediate debits during execution are allowed as long as the ending balance is sufficient.
+Consensus time: For each account, consensus has a budget for the gas spend for all inflight transactions; this budget is user_reserve_balance (or the account’s balance from the lagged execution state, whichever is lower). When performing block validity checks for block n, consensus checks that the budget is not exceeded.
+In Monad, user_reserve_balance is currently set to 10 MON for each EOA.
+The above rule is sufficient to ensure all transactions included in consensus can be paid for, thus solving our problem. However, it has a drawback, which is that EOAs can’t spend all of their MON, and EOAs with balances below user_reserve_balance won’t be able to send any successful transactions.
+For instance, the following behaviors might be desired, but are currently blocked by the above rule (with user_reserve_balance set to 10 MON):
+Alice has a balance of 5 MON and wants to send 4.99 MON to Bob (plus pay 0.01 MON in gas)
+Alice has a balance of 20 MON and wants to swap 18 MON into a memecoin (plus pay 0.01 MON in gas)
+To address this, we add some additional conditions under which transactions are allowed.
+​
+Addressing the drawback
+First let’s define an “emptying transaction”:
+A transaction is an “emptying transaction” iff
+the sender is undelegated.
+the sender has not sent any other transaction within the past k blocks.
+nobody has sent a delegation or undelegation request for the sender within the past k blocks, including in this transaction.
+Such transactions are eligible for the emptying exception (see rules below).
+Notice that if a user account is not EIP-7702-delegated, then consensus can simply inspect transactions statically in order to estimate the lowest a user’s balance can possibly go. (This is because an undelegated user’s account can only be debited due to value transfers and gas fees specified in the transaction data).
+Therefore, we add the following exception to the reversion rule:
+Execution policy: for each undelegated account sender:
+if a transaction is an emptying transaction
+then allow that transaction to proceed anyway (an “emptying transaction”).
+Consensus policy: for each undelegated account sender:
+if a transaction is an emptying transaction
+then statically inspect that transaction’s total MON needs (i.e. gas_bid * gas_limit + value), and take into account the fact that execution will still allow this transaction through. This means that for any subsequent transactions in the next k blocks, the reserve balance that consensus is working with will be lower by value.
+This rule lets execution allow consistently-undelegated accounts to dip below the reserve balance once every k blocks. Since k blocks is 1.2 seconds, this policy should allow most small accounts to still interact with the blockchain normally. Note that an account is not eligible for the exception criteria if there was recent (within k blocks) undelegation request for the account even if it was already undelegated at that time.
+See Full specification for details.
+The additional policy allows both of the examples mentioned at the end of the previous section, as long as they are the first transaction sent by the sender in k blocks.
+​
+Discussion
+​
+EIP-7702-delegated accounts
+If an EOA is not EIP-7702-delegated, then the reserve balance is rarely invasive, even if the EOA’s balance is very low, because most transactions are the first transaction in k=3 blocks sent by that EOA.
+But what if the EOA is EIP-7702-delegated? What is the impact?
+The only transactions that will revert are ones in which the balance of an EIP-7702-delegated EOA dips below 10 MON.
+‘Dips below’ means ‘decrements and drops below’.
+Transactions where the EOA’s balance ends above or at 10 MON are fine.
+Transactions where the EOA’s balance is unchanged or increases are fine.
+Only transactions that decrement the balance and result in a final balance below 10 MON are reverted.
+Delegated EOAs cannot use the emptying exception described above.
+For example, many sponsored gas workflows have users set up EIP-7702-delegated EOAs that don’t interact with MON at all (i.e. they start out empty, and only receive MON involuntarily). Under a typical such workflow, a sponsor submits a transaction that calls into the EOA as smart contract. This workflow works fine in Monad; it’s fine for the EOA in question to have a zero or very small balance.
+The only case where a sponsored gas workflow will be blocked is if the EOA’s balance is (say) 6 MON, and the sponsored transaction calls code that tries to transfer (say) 1 MON out of the EOA.
+​
+Transactions that are included but revert
+Because of the Reserve Balance rules, you may see transactions included in the chain whose execution reverts, such as transactions trying to transfer out more MON than are in the account balance.
+These transactions are still valid transactions that pay for gas, but the result of these transactions is nothing except for gas being decremented from the sender. They are included because at the time of consensus, the proposer cannot be sure that the account isn’t going to receive more MON from someone else, and the sender has the budget to pay for gas.
+Ethereum includes many transactions whose execution reverts, so this is not a protocol difference. However, in practice, Ethereum block builders may screen out transactions with insufficient balance to process a transfer out, so this behavior may be different from what you’re accustomed to seeing.
+​
+Detecting a reserve balance dip
+A contract can check at execution time whether its current execution has dipped into the reserve balance by calling the reserve balance precompile at 0x1001. It exposes a single method, dippedIntoReserve() (selector 0x3a61584e, gas cost 100), which returns a bool. It is specified in MIP-4.
+dippedIntoReserve() must be invoked via CALL. Invoking it via STATICCALL - or via DELEGATECALL or CALLCODE - reverts. Although it reads state and returns a value, it is intentionally not a view function, so that a Solidity call site compiles to CALL rather than STATICCALL.
+​
+Full specification
+See the reserve balance spec for the formal set of Reserve Balance rules.
+Algorithms 1 and 2 implement this check for consensus and execution, respectively.
+Algorithm 3 implements the mechanism to detect the dipping into the reserve balance (Algorithm 2 uses Algorithm 3 to revert transactions that dip).
+Algorithm 4 specifies the criteria for emptying transactions:
+The sender account must be undelegated in the prior k blocks. This is checked statically by verifying the account was undelegated in a known state in the past k blocks, and there have been no delegation or undelegation requests in the last k blocks (this can be inspected statically).
+There must not be another transaction from the same sender in the prior k blocks.
+Here is a quick summary of the reserve balance rules at consensus time:
+​
+If the account is not delegated and there are no inflight transactions
+If the account is not delegated, and there are no previous inflight transactions, then consensus checks that the gas fee for this transaction is less than the balance from the lagged state.
+gas_fees
+(
+tx
+)
+≤
+balance
+gas_fees(tx)≤balance
+​
+If the account is not delegated and has one emptying inflight transaction
+If the account is not delegated, and there is one previous inflight transaction, then consensus has to take into account the inflight transaction’s total MON expenditures (including value):
+let adjusted_balance
+=
+balance
+−
+(
+first_tx.value
++
+gas_fees
+(
+first_tx
+)
+)
+let adjusted_balance=balance−(first_tx.value+gas_fees(first_tx))
+let reserve
+=
+min
+⁡
+(
+user_reserve_balance
+(
+t
+.
+sender
+)
+,
+adjusted_balance
+)
+let reserve=min(user_reserve_balance(t.sender),adjusted_balance)
+A new transaction can only be included if the sum of all inflight transactions’ gas fees (excluding the first one) is less than the reserve:
+∑
+t
+x
+∈
+I
+[
+1
+:
+]
+gas_fees
+(
+t
+x
+)
+≤
+reserve
+tx∈I[1:]
+∑
+​
+ gas_fees(tx)≤reserve
+​
+All other cases
+The reserve is equal to minimum of systemwide reserve balance (10 MON) or the account’s balance at block n - k:
+reserve
+=
+min
+⁡
+(
+user_reserve_balance
+(
+t
+.
+sender
+)
+,
+balance
+)
+reserve=min(user_reserve_balance(t.sender),balance)
+A new transaction can only be included if the sum of all inflight transactions’ gas fees is less than the reserve:
+∑
+t
+x
+∈
+I
+gas_fees
+(
+t
+x
+)
+≤
+reserve
+tx∈I
+∑
+​
+ gas_fees(tx)≤reserve
+​
+Adjusting the reserve balance
+The reserve balance is currently the same for every account (10 MON). In a future version, the protocol could allow users, through a stateful precompile, to customize their reserve balance.
+​
+Coq proofs
+The safety of the reserve balance specification has been formally proved in Coq.
+The full proofs documentation is available here.
+The consensus check is formalized in Coq as consensusAcceptableTxs. The predicate, consensusAcceptableTxs s ltx, defines the criteria for the consensus module to accept the list of transactions ltx on top of state s.
+The proof shows that consensusAcceptableTxs s ltx implies that when the execution module executes all the transactions in ltx one by one on top of s, none of them will fail due to having insufficient balance to cover gas fees. The proof is by induction on the list ltx: one can think of this as doing natural induction on the length of ltx. The proof in the inductive step involves unfolding the definitions of the consensus and execution checks and considering all the cases. In each case, the estimates of effective reserve balance in consensus checks is shown to be conservative with respect to what happens in execution.
+​
+Additional examples
+To test your understanding, here are some examples along with the expected outcome. Each example is independent.
+In the following examples, we use start_block = 2, meaning the initial balances and reserves are after block 1. We also specify the reserve balance parameter for each example, although it is a constant system wide parameter.
+For each transaction, the expected result is indicated by a code:
+2: Successfully executed
+1: Included but reverted during execution (due to reserve balance dip)
+0: Excluded by consensus
+​
+Example 1: Basic transaction inclusion
+Initial state:
+Alice: balance = 100, reserve = 10
+Bob: balance = 5, reserve = 10
+Transactions:
+Block 2: [
+  Alice: send 1 MON, fee 0.05 — Expected: 2
+  Bob: send 2 MON, fee 0.05 — Expected: 2
+]
+Final balances:
+Alice: 98.95
+Bob: 2.95
+​
+Example 2: Low reserve balance but high balance
+Initial state:
+Alice: balance = 100, reserve = 1
+Transactions:
+Block 2: [
+  Alice: send 3 MON, fee 2 — Expected: 2 (emptying transaction)
+  Alice: send 3 MON, fee 2 — Expected: 0 (excluded)
+]
+Final balance:
+Alice: 95.0
+​
+Example 3: Multi-block, low reserve but high balance
+Initial state:
+Alice: balance = 100, reserve = 1
+Transactions:
+Block 2: [
+  Alice: send 3 MON, fee 2 — Expected: 2
+]
+
+
+Block 5: [
+  Alice: send 3 MON, fee 2 — Expected: 2
+]
+Final balance:
+Alice: 90.0
+​
+Example 4: Comprehensive
+Initial state:
+Alice: balance = 100, reserve = 1
+Transactions:
+Block 2: [
+  Alice: send 99 MON, fee 0.1 — Expected: 2 (large emptying transaction)
+]
+
+
+Block 3: [
+  Alice: send 0.5 MON, fee 0.99 — Expected: 0 (excluded)
+]
+
+
+Block 4: [
+  Alice: send 0.8 MON, fee 0.1 — Expected: 1 (included but reverted)
+]
+
+
+Block 5: [
+  Alice: send 0 MON, fee 0.9 — Expected: 0 (excluded)
+  Alice: send 5 MON, fee 0.1 — Expected: 1 (included but reverted)
+  Alice: send 5 MON, fee 0.8 — Expected: 0 (excluded)
+]
+Final balance:
+Alice: 0.70
+​
+Example 5: Edge case — zero value transactions
+Initial state:
+Alice: balance = 2, reserve = 1
+Transactions:
+Block 2: [
+  Alice: send 0 MON, fee 0.5 — Expected: 2
+  Alice: send 0 MON, fee 0.6 — Expected: 2
+  Alice: send 0 MON, fee 0.5 — Expected: 0 (exceeds reserve)
+]
+Final balance:
+Alice: 0.9
+​
+Example 6: Reserve balance boundary
+Initial state:
+Alice: balance = 10, reserve = 2
+Transactions:
+Block 2: [
+  Alice: send 1 MON, fee 2 — Expected: 2 (matches reserve)
+  Alice: send 0 MON, fee 0.01 — Expected: 2
+]
+Final balance:
+Alice: 6.99
+​
+Example 7: Account delegated in the interim
+Initial state:
+Alice: balance = 15, reserve = 10
+Transactions:
+Block 1: []
+
+
+Block 2: [
+  Alice is delegated
+  Bob on behalf of Alice: send 5 MON, fee 0 — Expected: 2 (executed)
+  Alice is undelegated
+]
+
+
+Block 3: [
+  Alice: send 3 MON, fee 0.1 — Expected: 1 (included but reverted)
+]
+
+
+Block 4: []
+
+
+Block 5: [
+  Alice: send 0 MON, fee 8 - Expected: 2 (executed)
+]
+Final balance:
+Alice: 1.9
+NOTE: If execution would not have reverted transaction in Block 3 (by checking delegation status in prior k blocks), consensus would include transaction in Block 5 which would later run out of MON for the fee.
+Also, consider Block 2 is empty instead. Transaction in Block 3 is then an emptying transaction, which proceeds with execution, but transaction in Block 5 is excluded as not having enough reserve for fee.
+​
+Example 8: Account receives MON before second inflight tx
+Initial state:
+Alice: balance = 15, reserve = 10
+Transactions:
+Block 1: []
+
+
+Block 2: [
+  Alice: send 6 MON, fee 0.1 - Expected: 2 (executed, emptying tx)
+]
+
+
+Block 3: [
+  Alice receives 6 MON from a smart contract 
+  Alice: send 7 MON, fee 0.1 — Expected: 1 (included but reverted, cannot be 2nd emptying so soon)
+]
+
+
+Block 4: []
+
+
+Block 5: [
+  Alice: send 0 MON, fee 8 - Expected: 2 (executed)
+]
+Final balance:
+Alice: 6.8
+NOTE: If execution would not have reverted the 2nd transaction in Block 3 (from Alice; by checking existence of emptying transactions in prior k blocks), consensus would include transaction in Block 5 which would later run out of MON for the fee.
+Also, consider Block 2 is empty instead. Transaction in Block 3 (from Alice) is then an emptying transaction, which proceeds with execution, but transaction in Block 5 is excluded as one potentially not having enough reserve for fee - consensus doesn’t see Alice being credited in Block 3.
+
+
+
+
+
+
+How to use the React Native sponsored transactions template
+
+
+Copy page
+
+
+Sponsored transactions enable users to interact with blockchain applications without needing to pay gas fees themselves, improving accessibility, user experience, and onboarding - especially for newcomers unfamiliar with crypto.
+This guide walks you through using the sponsored transactions template which uses Expo, React Native, Privy embedded wallet and Pimlico paymaster to build a mobile app with sponsored transactions on Monad.
+You can start developing by editing the files inside the app directory. This project uses file-based routing.
+This repo also has a demo branch that you can switch to if you’d like to inspect a completed version of the app first.
+​
+Prerequisites
+Node.js
+NPM
+a Privy account
+a Pimlico account
+For Android
+
+
+For iOS
+
+
+Setting up the Privy account
+
+
+​
+Get started
+This template also has a demo branch that you can switch to in order to view the demo project.
+You can switch using the following command:
+git checkout demo
+​
+Install dependencies
+npm install
+​
+Set up the environment variables
+Create a copy of .env.example:
+cp .env.example .env
+Add the following environment variables to it
+EXPO_PUBLIC_PRIVY_APP_ID=
+EXPO_PUBLIC_PRIVY_CLIENT_ID=
+EXPO_PUBLIC_PIMLICO_BUNDLER_URL=
+How to get `EXPO_PUBLIC_PRIVY_APP_ID`
+
+
+How to get `EXPO_PUBLIC_PRIVY_CLIENT_ID`
+
+
+How to get `EXPO_PUBLIC_PIMLICO_BUNDLER_URL`
+
+
+​
+Start the app
+Start the app either in the Expo Go app, or natively.
+In the Expo Go app:
+For iOS:
+npm run ios
+For Android:
+npm run android
+As a native app build:
+For iOS:
+npx expo run:ios
+For Android:
+npx expo run:android
+​
+Template folder structure
+react-native-privy-pimlico-gas-sponsorship-template/
+  ├── app/                                   # Expo router entrypoint
+  │   ├── _layout.tsx                        # Root layout
+  │   └── index.tsx                          # First screen
+  ├── assets/
+  │   ├── images/ 
+  │   │   ├── adaptive-icon.png
+  │   │   ├── favicon.png
+  │   │   ├── icon.png
+  │   │   ├── monad-logo-inverted.png
+  │   │   └── monad-logo.png
+  │   └── readme/                            
+  ├── constants/
+  │   └── Colors.ts
+  ├── hooks/
+  │   └── useSmartWallet.tsx                 # Smart wallet utilities
+  ├── screens/
+  │   └── Home.tsx                           # Start here
+  ├── types/
+  │   └── react-native-qrcode-styled.d.ts
+  ├── app.json                               # App properties
+  ├── babel.config.js
+  ├── eas.json
+  ├── entrypoint.js
+  ├── eslint.config.js
+  ├── metro.config.js                        # Configuration for Hermes and Polyfills
+  ├── package-lock.json
+  ├── package.json
+  ├── README.md
+  └── tsconfig.json
+​
+Send sponsored transactions
+Below is an example of how to use the useSmartWallet hook to send sponsored transactions. You can either modify the code to send your own transactions or integrate it into your existing project.
+...
+
+
+// Use `useSmartWallets` hook
+const { smartAccountAddress, smartAccountClient, smartAccountReady } = useSmartWallet();
+
+
+...
+
+
+// Send sponsored transaction
+const txHash = await smartAccountClient?.sendTransaction({
+  account: smartAccountClient?.account,
+  chain: monadTestnet,
+  to: NFT_CONTRACT_ADDRESS,
+  data,
+});
+
+
+...
+​
+Send batch sponsored transactions
+You can also send batches of sponsored transactions:
+const txHash = await smartAccountClient?.sendTransaction({
+  calls: [
+    {
+      to: NFT_CONTRACT_ADDRESS,
+      data,
+    },
+    {
+      to: NFT_CONTRACT_ADDRESS,
+      data,
+    },
+  ],
+});
+This example uses the Kernel smart account with Entrypoint v7. See useSmartWallet.tsx to inspect the implementation details.
+​
+Modify the app name
+iOS        Android
+        
+Edit the name property in app.json:
+app.json
+{
+   "expo": {
+      "name": "wallet-app", <--- Edit this
+      ...
+   }
+}  
+​
+Modify the app icon and splash screen
+​
+App icon
+iOS        Android
+        
+You can edit the app icon by replacing assets/images/icon.png.
+Recommended app icon size is 1024x1024.
+If you name the icon file something else, then edit the icon property in app.json accordingly.
+app.json
+{
+   "expo": {
+      "name": "rn-wallet-app",
+      ...
+      "icon": "./assets/images/icon.png", <--- Change this
+      ...
+   }
+}
+​
+Splash screen
+iOS        Android
+        
+Edit the splash object in app.json to modify the splash screen.
+app.json
+{
+   "expo": {
+      "name": "rn-gas-sponsorship-app",
+      ...
+      "splash": { <--- Edit this object
+         "image": "./assets/images/icon.png",
+         "backgroundColor": "#ffffff"
+      }
+   }  
+}
+​
+Change fonts
+You can create a fonts folder inside assets to store your custom font files.
+To use the custom font, load the font in app/_layout.tsx.
+Example:
+app/_layout.tsx
+const [loaded] = useFonts({
+  "SF-Pro-Rounded-Black": require("../assets/fonts/SF_Pro_Rounded/SF-Pro-Rounded-Black.otf"),
+  "SF-Pro-Rounded-Bold": require("../assets/fonts/SF_Pro_Rounded/SF-Pro-Rounded-Bold.otf"),
+  "SF-Pro-Rounded-Heavy": require("../assets/fonts/SF_Pro_Rounded/SF-Pro-Rounded-Heavy.otf"),
+  "SF-Pro-Rounded-Medium": require("../assets/fonts/SF_Pro_Rounded/SF-Pro-Rounded-Medium.otf"),
+  "SF-Pro-Rounded-Regular": require("../assets/fonts/SF_Pro_Rounded/SF-Pro-Rounded-Regular.otf"),
+  "SF-Pro-Rounded-Semibold": require("../assets/fonts/SF_Pro_Rounded/SF-Pro-Rounded-Semibold.otf"),
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+});
+​
+Modify the deeplinking scheme
+Edit the scheme property in app.json to select your custom deeplinking scheme:
+app.json
+{
+  "expo": {
+    ...
+    "scheme": "rnwalletapp",
+    ...
+  }
+}
+For example, if you set this to rnwalletapp, then rnwalletapp:// URLs would open your app when tapped.
+This is a build-time configuration; it has no effect in Expo Go.
+​
+Edit the landing screen
+You can edit the landing page by editing screens/Home.tsx.
+In the demo branch, we ended up adding more complex functionality, which is why Home.tsx became a folder.
+​
+Modify the package/bundle identifier
+When publishing app to the app store, you need to have a unique package/bundle identifier, which you may set in app.json.
+Don’t forget to change the identifier in Privy dashboard
+app.json
+{
+  "expo": {
+    "name": "rn-gas-sponsorship-app",
+    ...
+    "ios": {
+      "bundleIdentifier": "com.anonymous.rn-wallet-app", <--- Edit this
+      ...
+    },
+    "android": {
+      ...
+      "package": "com.anonymous.rnwalletapp" <--- Edit this
+    },
+  }
+}
+​
+Check out the demo app
+If you’d like to try a completed version of the app before you start developing, switch to the demo branch:
+git checkout demo
+​
+Demo app folder structure
+react-native-privy-pimlico-gas-sponsorship-template/
+  ├── app/
+  │   ├── _layout.tsx                        # Root layout of the project
+  │   └── index.tsx                          # This is the landing page
+  │   └── sign-in/                           # Unauthenticated user gets redirected to /sign-in
+  ├── assets/
+  │   ├── fonts/                             # Custom fonts go here
+  │   │   └── SF_Pro_Rounded/                # Custom font example
+  │   └── images/
+  │       ├── adaptive-icon.png
+  │       ├── favicon.png
+  │       ├── icon.png
+  │       ├── monad-icon.png
+  │       ├── monad-logo-inverted.png
+  │       ├── monad-logo.png
+  │       ├── partial-react-logo.png
+  │       └── splash-icon.png
+  ├── components/
+  │   └── ui/
+  ├── constants/
+  │   ├── abi.json                           # NFT smart contract ABI
+  ├── context/
+  │   ├── AuthContext.tsx
+  ├── hooks/
+  │   ├── useSmartWallet.tsx                 # Hook with smart wallet related functions
+  ├── screens/
+  │   ├── Email/                             # Screen that asks for email
+  │   ├── Home/                              # NFT minting screen (Authenticated users only)
+  │   └── OTP/                               # Screen that asks for the OTP code sent to email
+  ├── types/
+  ├── utils.ts
+  ├── entrypoint.js
+  ├── app.json
+  ├── babel.config.js
+  ├── eas.json
+  ├── eslint.config.js
+  ├── metro.config.js
+  ├── package.json
+  ├── package-lock.json
+  ├── README.md
+  ├── tsconfig.json
+​
+Learn more
+To learn more about developing your project with Expo, Privy, and Monad, check out the following resources:
+Expo docs | guides | tutorial
+Privy: create a wallet | send a transaction | sign a transaction
+Permissionless: smart wallet client | sending transactions
+Monad: supported tooling and infra
+Please report any issues here.
+
+
+
+
+
+
+How to use the Next.js PWA sponsored transactions template
+
+
+Copy page
+
+
+This guide walks you through using the template which uses Next.js, Serwist (offline capabilities), and Privy smart wallet (authentication and transaction sponsorship) to build a Progressive Web Application (PWA) on Monad.
+​
+Prerequisites
+Node.js (v18 or higher)
+a Privy account
+a Pimlico account
+Setting up Privy
+
+
+Setting up Pimlico
+
+
+​
+Setup
+Clone the repository:
+git clone https://github.com/monad-developers/next-serwist-privy-smart-wallet.git
+cd into the project directory:
+cd next-serwist-privy-smart-wallet
+Install dependencies:
+npm install
+Create a .env.local file in the root directory:
+cp .env.example .env.local
+Start adding your environment variables to the .env.local file:
+# Privy 
+NEXT_PUBLIC_PRIVY_APP_ID=your_privy_app_id_here
+NEXT_PUBLIC_PRIVY_CLIENT_ID= # optional, you can leave this empty
+
+
+# Web Push
+WEB_PUSH_EMAIL=user@example.com
+WEB_PUSH_PRIVATE_KEY=your_vapid_private_key
+NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY=your_vapid_public_key
+
+
+# Pimlico
+NEXT_PUBLIC_PIMLICO_BUNDLER_URL=your_pimlico_bundler_url
+If you lost your Privy App ID, you can find it in the Privy dashboard.
+Generate VAPID keys for web push notifications:
+npx web-push generate-vapid-keys --json
+Copy the generated keys to your .env.local file (replace the placeholder values from step 5).
+Running the Application:
+Development Mode:
+npm run dev
+The application will be available at http://localhost:3000.
+Production Mode:
+For full PWA functionality (including install prompts):
+npm run build && npm run start
+​
+Send sponsored transactions
+Below is an example of how to use the useSmartWallet hook to send sponsored transactions. You can either modify the code to send your own transactions or integrate it into your existing project.
+// Use `useSmartWallet` hook
+const { smartAccountAddress, smartAccountClient, smartAccountReady } = useSmartWallet();
+
+
+// Send sponsored transaction
+const txHash = await smartAccountClient?.sendTransaction({
+  account: smartAccountClient?.account,
+  chain: monadTestnet, // Import this from `viem/chains`
+  to: NFT_CONTRACT_ADDRESS,
+  data,
+});
+​
+Send batch sponsored transactions
+You can also send batches of sponsored transactions:
+const txHash = await smartAccountClient?.sendTransaction({
+  calls: [
+    {
+      to: NFT_CONTRACT_ADDRESS,
+      data,
+    },
+    {
+      to: NFT_CONTRACT_ADDRESS,
+      data,
+    },
+  ],
+});
+This example uses the Kernel smart account with Entrypoint v7. See useSmartWallet.tsx to inspect the implementation details.
+​
+Folder structure of the template
+next-serwist-privy-smart-wallet/
+├── app/
+│   ├── components/         # React components
+│   │   ├── InstallPWA.tsx  # PWA install prompt
+│   │   └── ...
+│   ├── hooks/                  # Custom React hooks
+│   │   └── useSmartWallet.tsx  # Smart wallet management hook
+│   ├── ~offline/           # Offline page
+│   └── ...
+├── public/                 # Static assets
+└── ...
+​
+Changing the app name
+Edit public/manifest.json:
+Change the name and short_name fields
+Run npm run build to update the app
+​
+Notification Setup
+To receive push notifications from this app, you need to enable notifications in your browser and/or system settings:
+​
+Browser Settings
+Chrome/Edge
+
+
+Firefox
+
+
+Safari
+
+
+​
+System Settings
+macOS
+
+
+Windows
+
+
+iOS
+
+
+Android
+
+
+​
+Backend Integration Required
+SendNotification.tsx requires backend implementation:
+Save subscription data when users subscribe (see TODO comments in code)
+Delete subscription data when users unsubscribe
+Implement /notification endpoint to send actual push notifications
+Use web-push library or similar for server-side notification delivery
+​
+Customizing Notification Content
+To customize your push notification content, edit app/notification/route.ts and modify the title, message, icon, and other properties in the sendNotification call.
+​
+Modifying the App Icon & Splash Screen
+​
+App Icons
+Replace the icon files in the public/icons/ directory with your custom icons:
+icon-512x512.png - Main app icon (512×512px)
+android-chrome-192x192.png - Android icon (192×192px)
+apple-touch-icon.png - iOS home screen icon (180×180px)
+Also update the favicon:
+public/favicon.ico - Browser favicon
+app/favicon.ico - Next.js app favicon
+​
+Splash Screen
+Splash screens are automatically generated from your app icon and theme colors defined in public/manifest.json. To customize:
+Update the theme_color and background_color in public/manifest.json
+Ensure your main icon (icon-512x512.png) represents your brand
+Run npm run build to apply changes
+Use tools like PWA Asset Generator to create all required icon sizes from a single source image.
+​
+Deploying to Vercel
+​
+Using Vercel Dashboard
+Connect your repository:
+Push your code to GitHub
+Visit vercel.com and import your repository
+Configure environment variables:
+In your Vercel project dashboard, go to Settings → Environment Variables
+Add the same variables from your .env.local:
+NEXT_PUBLIC_PRIVY_APP_ID
+NEXT_PUBLIC_PRIVY_CLIENT_ID
+WEB_PUSH_EMAIL
+WEB_PUSH_PRIVATE_KEY
+NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY
+NEXT_PUBLIC_PIMLICO_BUNDLER_URL
+Deploy: Vercel will automatically build and deploy your app
+Update Privy settings: In your Privy dashboard, add your Vercel domain (e.g., your-app.vercel.app) to the allowed origins
+PWA features (install prompts, offline support, push notifications) work automatically on HTTPS domains like Vercel deployments.
+​
+Using Vercel CLI
+Alternatively, deploy using the Vercel CLI:
+Install Vercel CLI:
+npm i -g vercel
+Login to Vercel:
+vercel login
+Deploy:
+vercel
+Follow the prompts to configure your project.
+Add environment variables:
+vercel env add NEXT_PUBLIC_PRIVY_APP_ID
+vercel env add NEXT_PUBLIC_PRIVY_CLIENT_ID
+vercel env add WEB_PUSH_EMAIL
+vercel env add WEB_PUSH_PRIVATE_KEY
+vercel env add NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY
+vercel env add NEXT_PUBLIC_PIMLICO_BUNDLER_URL
+Or you can go to the Vercel dashboard and add the environment variables there.
+Redeploy with environment variables:
+vercel --prod
+​
+Learn more
+Serwist: docs | guides
+Privy: create a wallet | send a transaction | sign a transaction
+Pimlico: docs | guides
+Monad: supported tooling and infra

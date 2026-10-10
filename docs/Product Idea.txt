@@ -1,0 +1,518 @@
+﻿Product Idea:
+
+
+ProofBounty
+A Permissionless Marketplace for Human and AI Work
+1. Core Idea
+
+
+ProofBounty is an on-chain bounty marketplace where anyone can post a clearly defined task, lock a reward, and invite others to compete for it. Humans and, eventually, AI agents can submit their work before a fixed deadline.
+
+
+Multiple participants can compete for the same bounty. The creator reviews the submissions and selects the winner, while reputation and community feedback help inform the decision.
+
+
+Unlike a traditional task marketplace, ProofBounty uses smart contracts on Monad to govern funding, deadlines, winner selection, and payouts. Once a winner is selected, the locked reward is released directly to their wallet.
+
+
+Every completed bounty creates a verifiable work record that contributes to the winner’s portable reputation.
+
+
+The vision: An open marketplace where work, rewards, and reputation are verifiable without requiring participants to trust a centralized platform to manage their money.
+
+
+2. How It Works
+Step 1 — Create a Bounty
+
+
+The creator specifies:
+
+
+Title and description
+Reward amount
+Submission deadline
+Category
+Winner-selection method
+
+
+The creator funds the bounty, and the smart contract locks the reward. The bounty then appears on the public marketplace.
+
+
+Step 2 — Submit Work
+
+
+Anyone can discover the bounty and submit work before the on-chain deadline.
+
+
+Submissions can include text, links, images, code references, or files stored off-chain. Multiple participants can submit solutions to the same bounty.
+
+
+Step 3 — Evaluate Submissions
+
+
+Two evaluation mechanisms operate in parallel.
+
+
+Community evaluation: Other users can mark submissions as credible or low quality. These signals help creators compare submissions but do not determine payouts.
+
+
+Creator evaluation: The bounty creator reviews the submissions and selects the winner.
+
+
+Step 4 — Settle the Reward
+
+
+The smart contract verifies that the bounty is unresolved, the caller is authorized, and the selected submission is valid. It then releases the locked reward to the winner and marks the bounty as completed.
+
+
+Step 5 — Record Reputation
+
+
+The completed bounty generates a verifiable work receipt. The winner’s history and reputation are updated to reflect the outcome.
+
+
+If the creator fails to decide within the configured review period, the bounty can enter a defined resolution process. For the MVP, refunding unresolved subjective bounties is safer than attempting unreliable automatic judgments.
+
+
+3. Core Features
+3.1 Multiple Submissions
+
+
+Multiple participants can compete for the same reward. This creates a competitive marketplace in which creators can compare different solutions rather than relying on a single worker.
+
+
+3.2 On-Chain Escrow
+
+
+The reward is locked in the smart contract before work begins. The creator cannot withdraw it unilaterally while the bounty is active, subject to the contract’s resolution rules.
+
+
+This is a fundamental reason to use blockchain: funding and settlement are governed by verifiable rules rather than platform discretion.
+
+
+3.3 Manual and Rule-Based Resolution
+
+
+The creator remains the primary decision-maker for subjective work.
+
+
+Manual selection: The creator chooses the best submission.
+Rule-based selection: Predefined rules determine whether a submission satisfies an objectively verifiable condition.
+Fallback resolution: Unresolved subjective bounties can be refunded under explicit contract rules.
+
+
+For the hackathon MVP, manual winner selection should be the primary path. Automated evaluation can be demonstrated as a future extension.
+
+
+3.4 Community Credibility
+
+
+Users can mark submissions as credible or low quality. These signals support discovery and evaluation without directly controlling payouts.
+
+
+To reduce manipulation, community feedback should be treated as supporting evidence rather than definitive proof of quality.
+
+
+3.5 Enforced Deadlines
+
+
+Every bounty has an on-chain deadline. The contract rejects late submissions, making the deadline an enforceable rule rather than merely a frontend countdown.
+
+
+3.6 Instant Settlement
+
+
+When the creator selects a valid winner, the contract releases the reward directly to the winning wallet.
+
+
+For the MVP, use a test ERC-20 reward token on Monad Testnet if suitable testnet USDC infrastructure is unavailable.
+
+
+3.7 Verifiable Work Receipts
+
+
+Each completed bounty produces an on-chain record containing:
+
+
+Bounty ID
+Creator and winner addresses
+Reward amount
+Submission reference or hash
+Completion timestamp
+Outcome
+
+
+Large files remain off-chain, while their references or hashes provide a verifiable link to the submitted work.
+
+
+3.8 Activity Feed
+
+
+A live activity feed displays:
+
+
+Newly created bounties
+Recent submissions
+Completed bounties
+Winner announcements
+Payments and reputation events
+
+
+This makes the marketplace feel active and helps demonstrate Monad transactions during the hackathon.
+
+
+4. Reputation System
+
+
+ProofBounty builds persistent, wallet-linked work histories for humans and AI agents.
+
+
+Reputation should primarily reflect actual outcomes rather than popularity.
+
+
+Positive signals
+
+
+Successful bounty completion
+Repeated accepted submissions
+Positive creator feedback
+Consistent, verifiable work history
+
+
+Negative signals
+
+
+Repeated rejected or poor-quality submissions
+Spam and fraudulent activity
+Credible evidence of dishonest behavior
+
+
+Community votes can contribute supporting signals, but they should not be the sole basis for reputation. Otherwise, users could manipulate rankings with multiple wallets.
+
+
+Higher reputation can improve marketplace visibility, submission trust indicators, search ranking, and eligibility for automated selection.
+
+
+ERC-8004 Integration
+
+
+For AI agents, ProofBounty can integrate with ERC-8004 identity and reputation registries. This can help make an agent’s identity and reputation portable across compatible applications.
+
+
+For human participants, the MVP can maintain wallet-linked completion statistics and work history.
+
+
+5. Why Blockchain Is Necessary
+
+
+ProofBounty should not be positioned as a conventional task marketplace with blockchain added as an afterthought.
+
+
+Its core proposition is:
+
+
+A permissionless work market where funding, settlement, and work history are verifiable and portable.
+
+
+Blockchain provides six key properties:
+
+
+Guaranteed funding: Rewards are locked before work begins.
+Enforced deadlines: The contract rejects submissions outside the allowed period.
+Verifiable settlement: Payments follow contract rules instead of a centralized payout queue.
+Transparent history: Bounty creation, completion, and payments can be independently verified.
+Portable reputation: Work outcomes can become reusable reputation signals.
+Permissionless participation: Humans and agents can participate without requiring platform approval.
+
+
+The platform still needs reliable frontend services and off-chain storage, but the essential economic lifecycle is governed by the smart contract.
+
+
+6. Why Monad?
+
+
+ProofBounty is designed around many small, independent economic transactions.
+
+
+A mature marketplace could generate frequent transactions for:
+
+
+Bounty creation and funding
+Work submissions
+Reputation updates
+Community signals
+Winner selection and payouts
+Agent-to-agent payments
+
+
+Monad’s focus on high throughput, fast execution, and low transaction costs makes it a relevant environment for this model.
+
+
+The Monad narrative: Small tasks and small payments can become individual, verifiable on-chain economic events rather than remaining entirely inside a centralized database.
+
+
+7. AI Agent Extension
+
+
+AI agents are a natural extension of ProofBounty because they can discover tasks, evaluate whether a task matches their capabilities, perform the work, and submit evidence programmatically.
+
+
+Example Workflow
+
+
+Alice posts a bounty:
+
+
+Find and reproduce a bug in this open-source project. Reward: 5 USDC.
+
+
+An AI coding agent discovers the bounty, evaluates the requirements, and produces:
+
+
+Reproduction steps
+A minimal test case
+A GitHub issue or pull request
+Supporting evidence
+
+
+Alice reviews the submission and accepts it. The contract releases the reward, and the agent receives a verifiable completion record.
+
+
+Over time, the agent can build a history of completed tasks, earned rewards, and creator feedback.
+
+
+Instead of relying on an agent’s self-reported capabilities, users can inspect its verifiable work history.
+
+
+x402 Integration
+
+
+x402 can support machine-to-machine payments for services such as paid task-discovery APIs and external evaluation endpoints.
+
+
+It should complement the bounty escrow mechanism rather than replace it.
+
+
+A future workflow could look like:
+
+
+AI agent → discovers a paid service → pays through x402 → performs a bounty → submits work → receives the bounty reward.
+
+
+8. Hackathon MVP Scope
+
+
+The goal is to implement one complete bounty lifecycle, not the entire long-term platform.
+
+
+Four Primary Screens
+
+
+1. Bounty Board
+
+
+Display open bounties with their titles, rewards, categories, deadlines, submission counts, creator addresses, and status.
+
+
+Include filters for highest reward, ending soon, and category, alongside a small activity feed.
+
+
+2. Post Bounty
+
+
+Provide fields for:
+
+
+Task title and description
+Reward amount
+Deadline
+Category
+Selection method
+
+
+The creator confirms a wallet transaction to fund and publish the bounty.
+
+
+3. Bounty Detail
+
+
+Display the full task, reward, deadline, creator, and all submissions.
+
+
+Each submission includes the worker’s wallet, work or evidence link, submission time, and available credibility signals. The creator can select a winner, while eligible participants can submit work before the deadline.
+
+
+4. Profile
+
+
+Display reputation, completed bounties, wins, total earned, success rate, and recent work history.
+
+
+The same structure can later accommodate ERC-8004 identity and reputation information for AI agents.
+
+
+Optional Fifth Screen: My Bounties
+
+
+If time permits, add separate views for:
+
+
+Posted: Open, under review, and completed bounties
+Submitted: Active submissions, wins, and unsuccessful submissions
+
+
+Do not build this screen until the main bounty lifecycle is functional.
+
+
+9. Recommended Tech Stack
+Layer        Technology
+Frontend        Next.js, TypeScript
+UI        Tailwind CSS, shadcn/ui
+Smart contracts        Solidity, Foundry
+Blockchain integration        viem, wagmi
+Wallet        Standard wallet connection
+Network        Monad Testnet
+Storage        IPFS/Pinata or another off-chain storage service
+Reputation        Wallet-linked records; optional ERC-8004 integration
+Deployment        Vercel
+Package manager        npm
+
+
+For a one-day build, avoid adding infrastructure that does not directly support the demonstration.
+
+
+10. Smart Contract Responsibilities
+
+
+The bounty contract is the core of the system.
+
+
+Creating a Bounty
+
+
+The creator specifies the task parameters and funds the contract. The contract assigns a unique bounty ID and emits a BountyCreated event.
+
+
+Submitting Work
+
+
+The contract records the bounty ID, submitter, submission reference or hash, and timestamp. It rejects submissions after the deadline.
+
+
+Selecting a Winner
+
+
+The contract verifies that:
+
+
+The bounty is unresolved.
+The caller is the bounty creator.
+The selected submission belongs to the bounty.
+The submission was made within the permitted period.
+The reward has not already been paid.
+Paying the Winner
+
+
+The contract transfers the locked reward, marks the bounty as completed, and emits a completion event containing the relevant outcome information.
+
+
+Handling Unresolved Bounties
+
+
+Define an explicit review period and fallback mechanism. For subjective tasks, the MVP should favor a clear refund path over pretending that an automated reputation score can reliably determine the winner.
+
+
+11. Reputation and Community Feedback
+
+
+The initial implementation can keep reputation simple.
+
+
+A completed bounty contributes to the worker’s success history. Creator feedback can provide additional context, while community credibility signals help users evaluate individual submissions.
+
+
+A useful distinction is:
+
+
+Work outcome → primary reputation signal
+
+
+Community feedback → supporting evaluation signal
+
+
+This reduces the influence of popularity and makes actual completion records the foundation of trust.
+
+
+12. Live Demo Plan
+
+
+The demo should focus on one complete, verifiable transaction flow.
+
+
+Wallet A — Creator
+
+
+Creates a bounty titled “Find a reproducible bug in this demo application,” funds it with 5 test tokens, and sets a short deadline.
+
+
+The interface shows that the reward has been locked.
+
+
+Wallet B — Worker
+
+
+Opens the bounty and submits a solution with supporting evidence.
+
+
+The submission appears on the bounty detail page.
+
+
+Wallet A — Winner selection
+
+
+Reviews the submission and selects the winner. The creator confirms the transaction.
+
+
+Settlement
+
+
+The interface displays the completed bounty, winning wallet, reward amount, and transaction hash.
+
+
+Finally, open the Monad explorer to show the actual settlement transaction.
+
+
+This single end-to-end flow demonstrates the core product better than several unfinished features.
+
+
+13. Business Model
+
+
+The simplest initial business model is a fee on successfully completed bounties.
+
+
+For example, a 2% fee on a 5 USDC bounty would generate 0.10 USDC in platform revenue.
+
+
+Potential future revenue streams include:
+
+
+Settlement fees: A percentage of completed bounty value.
+Agent API access: Programmatic access to bounty discovery and marketplace data.
+Evaluation services: Paid verification for objectively measurable tasks.
+Enterprise infrastructure: Tools for organizations coordinating work across human contributors and AI agents.
+
+
+The long-term opportunity extends beyond a freelance marketplace. ProofBounty can become infrastructure for permissionless, verifiable human and AI work.
+
+
+14. Final Positioning
+
+
+ProofBounty combines competitive task completion, funded rewards, verifiable settlement, and portable work reputation in a single marketplace.
+
+
+Monad provides the on-chain foundation for small, frequent economic interactions. Smart contracts govern the bounty lifecycle, while reputation and AI-agent integrations extend the marketplace beyond traditional gig platforms.
+
+
+ProofBounty: Post work. Compete to deliver. Prove the outcome. Get paid.

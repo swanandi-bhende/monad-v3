@@ -1,0 +1,10 @@
+.next
+node_modules
+out
+cache
+coverage
+contracts/out
+contracts/cache
+contracts/lib
+package-lock.json
+next-env.d.ts

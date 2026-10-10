@@ -1,0 +1,161 @@
+﻿Monad Blitz Pune V3
+
+
+One Day. No Limits. Just Ship.
+​Monad Blitz is storming into Pune for Blitz V3! This isn't your typical multi-day hackathon. It's a high-intensity, one-day IRL build sprint where you'll learn Monad, ship fast, and plug directly into one of the most exciting high-performance blockchain ecosystems today.
+
+
+​Since launching in 2025, Monad Blitz has energized builders from Shenzhen to San Francisco through 50+ Blitz Hacks. Now, the energy continues in Pune.
+
+
+​Get ready for an all-action day where you learn, build, vibe, and ship, all at ludicrous speed.
+
+
+​⚡ THE VIBE
+​Pune Blitz isn't about fancy zones or over-engineered setups. It's about pure builder energy and a day dedicated to creating, collaborating, and shipping at speed.
+
+
+​🤝 Connect with Pune's Sharpest Builders
+
+
+​Meet some of the city's most talented developers. Share ideas, spark new ones, form teams instantly, and build alongside people who move as fast as you do.
+
+
+​💡 Collaborate & Ship Wild Ideas
+
+
+​Come with an idea or discover one on the spot. Blitz is designed for momentum. Prototype fast, get real feedback, iterate quickly, and ship a consumer-ready dApp on Monad by evening.
+
+
+​🎯 THE STAKES
+​$1,500 Prize Pool
+
+
+​🥇 1st Place: $500
+
+
+​🥈 2nd Place: $400
+
+
+​🥉 3rd Place: $300
+
+
+​🎖️ 4th Place: $200
+
+
+​🎗️ 5th Place: $100
+
+
+​Peer-Judged: Your fellow builders choose the winners. Zero Constraints: Build any consumer app on Monad. If it runs, it's fair game.
+
+
+​THE FLOW
+​Learn: Morning workshops and hands-on mentoring to get you up to speed on Monad.
+
+
+​Build: 7 hours of high-speed execution. Form a team or go solo.
+
+
+​Ship: Demo your MVP to the crowd.
+
+
+​Win: Claim your share of the prize.
+
+
+​WHY BLITZ?
+​Monad is built for speed, and Blitz is how we prove it.
+
+
+​We provide the environment, the mentors, and the brain fuel (yes, everything is purple). You bring the code.
+
+
+​Whether you're a seasoned EVM developer or just curious about high-performance blockchains, if you can ship, you belong here.
+
+
+​About Monad
+​Monad is a high-performance, EVM-compatible Layer 1 blockchain built from the ground up for parallel execution.
+
+
+​With innovations in consensus and execution, Monad can scale to 10,000 TPS, enabling new classes of hyper-responsive, consumer-ready applications.
+
+
+​About Monad Blitz
+​Monad Blitz is a global one-day hackathon series designed for speed, experimentation, and real output.
+
+
+​It has traveled from Shenzhen to San Francisco, empowering thousands of developers and producing hundreds of prototypes, all in a single day per city.
+
+
+​If you like working fast, this is where you belong.
+
+
+Resources: 
+
+
+https://docs.monad.xyz/
+
+
+https://docs.monad.xyz/developer-essentials/testnet
+
+
+https://docs.monad.xyz/guides/add-monad-to-wallet
+
+
+https://docs.monad.xyz/guides/deploy-smart-contract
+
+
+https://docs.monad.xyz/guides/deploy-smart-contract/foundry
+
+
+https://docs.monad.xyz/guides/deploy-smart-contract
+
+
+https://docs.monad.xyz/guides/verify-smart-contract
+
+
+https://docs.monad.xyz/developer-essentials/network-information/tokens-and-bridges
+
+
+https://docs.monad.xyz/developer-essentials/differences
+
+
+https://docs.monad.xyz/tooling-and-infra
+
+
+https://docs.monad.xyz/guides/indexers
+
+
+https://docs.monad.xyz/guides/x402
+
+
+https://docs.monad.xyz/guides/erc-8004
+
+
+https://docs.monad.xyz/guides/kuru-flow
+
+
+https://docs.monad.xyz/monad-arch
+
+
+https://docs.monad.xyz/templates/farcaster-miniapp
+
+
+https://docs.monad.xyz/templates/react-native-privy-embedded-wallet
+
+
+https://docs.monad.xyz/templates/next-serwist-privy-embedded-wallet
+
+
+https://docs.monad.xyz/developer-essentials/eip-7702
+
+
+https://docs.monad.xyz/developer-essentials/reserve-balance
+
+
+https://docs.monad.xyz/templates/react-native-privy-pimlico-sponsored-transactions
+
+
+https://docs.monad.xyz/templates/next-serwist-privy-smart-wallet
+
+
+https://skills.devnads.com/?utm_source=blitz_website

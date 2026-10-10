@@ -89,7 +89,7 @@ function toSubmissions(
   }));
 }
 
-export function readBountyCount() {
+function readBountyCount() {
   return readContract(wagmiConfig, {
     address: getProofBountyAddress(),
     abi: PROOFBOUNTY_ABI,

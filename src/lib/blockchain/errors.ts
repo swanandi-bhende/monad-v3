@@ -9,7 +9,7 @@ import {
 } from "viem";
 import type { TransactionErrorKind } from "@/types/transaction";
 
-export type ClassifiedError = { kind: TransactionErrorKind; message: string };
+type ClassifiedError = { kind: TransactionErrorKind; message: string };
 
 const REVERT_MESSAGES: Record<string, string> = {
   NotCreator: "Only the bounty creator can do this.",

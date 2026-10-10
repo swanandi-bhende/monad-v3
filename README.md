@@ -2,227 +2,140 @@
 
 **Post work. Compete to deliver. Prove the outcome. Get paid.**
 
-ProofBounty is a permissionless bounty marketplace on [Monad](https://docs.monad.xyz). A creator posts a clearly defined task and locks an ERC-20 reward in a smart contract. Anyone can submit work before the on-chain deadline. The creator picks a winner, and the contract pays the reward directly to that wallet. If nothing is selected in time, the creator can reclaim the reward.
+Submission for Monad Blitz Pune V3 (2026). Runs on **Monad Testnet** (chain ID 10143) only.
 
-Submission for Monad Blitz Pune V3 (2026). This project runs on **Monad Testnet** only.
+## 1. What ProofBounty is
 
-## Core workflow
+A permissionless bounty marketplace on Monad. A creator posts a task and locks an ERC-20 reward in a smart contract. Anyone can submit work before the deadline. The creator picks a winner, and the contract pays the reward straight to that wallet.
 
-1. **Create.** The creator sets the task metadata (title, description, category, selection method), a reward, and a deadline. The contract escrows the reward in the same transaction.
-2. **Submit.** Anyone except the creator can submit work before the deadline. The contract rejects late submissions. The submission stores an evidence link or reference.
-3. **Select.** The creator picks a winner while the bounty is open and before the review period ends. The contract checks the caller and the submission, marks the bounty completed, and transfers the escrowed reward to the winner.
-4. **Refund.** If nothing is selected by `deadline + review period`, the creator can reclaim the reward. Completed and refunded bounties cannot be settled again.
+## 2. Problem
 
-Community credibility is a separate, secondary signal. Any wallet except the submitter can mark a submission **credible** or **low quality**, once per wallet, stored on-chain in `SubmissionCredibility`. Credibility never changes who gets paid and is never used to lower anyone's reputation. Reputation counts only on-chain outcomes: bounties won, completed bounties, and rewards paid.
+Freelance and open-source bounties depend on a platform to hold money and decide payouts. Creators can't prove the reward is actually funded, and workers can't prove the deadline or payout rules will be honored. Work history also lives in a platform's database, so it can't move with the worker.
 
-## How blockchain is used
+## 3. Solution
 
-- **Escrow.** The reward is transferred into the contract when the bounty is created.
-- **Credibility signals.** Stored in their own contract, so the escrow contract is never changed to add them.
-- **Enforced deadlines.** Late submissions are rejected by the contract, not just hidden by the UI.
-- **Direct payout.** The winner receives the reward in the same transaction that selects them.
-- **Verifiable history.** Every create, submit, select, and refund emits an event that can be checked on the explorer.
+- The reward is escrowed on-chain when the bounty is created.
+- The deadline is enforced by the contract, not by a UI countdown.
+- Payout happens in the same transaction as the creator's winner selection.
+- Every step emits an event, so the activity and work history can be checked on the explorer.
 
-x402 is not used for escrow or payouts. ERC-8004 is a possible future extension and is not part of this MVP.
+## 4. Architecture
 
-## Why Monad
+- **Frontend** (repo root): Next.js 16 App Router, React 19, TypeScript, Tailwind v4. wagmi and viem talk to Monad Testnet directly. TanStack Query polls the chain.
+- **Contracts** (`contracts/`): Foundry, Solidity 0.8.28, OpenZeppelin 5.1.
+  - `ProofBounty.sol`: escrow and lifecycle.
+  - `SubmissionCredibility.sol`: community signals, kept separate so the escrow contract stays minimal.
+  - `TestUSD.sol`: test reward token (tUSD, 6 decimals).
+- **No backend, database, or indexer.** Bounties are read with a batched Multicall3 request. Activity and work history come from contract events, scanned in 100-block ranges and cached in the browser.
 
-Bounties, submissions, and payouts are many small, independent transactions. Monad's high throughput and low fees make per-action on-chain records practical.
+## 5. Bounty lifecycle
 
-## Architecture
+| Stage           | Who                   | Rule enforced by the contract                                    |
+| --------------- | --------------------- | ---------------------------------------------------------------- |
+| Create and fund | Creator               | Reward moves into escrow. Deadline must be in the future.        |
+| Submit          | Anyone except creator | Only before the deadline. Evidence must be non-empty.            |
+| Under review    | Creator               | After the deadline, until the review period ends.                |
+| Select winner   | Creator only          | Before the review period ends. One settlement per bounty.        |
+| Expired         | Creator               | No winner by `deadline + review period`. Submissions are closed. |
+| Refund          | Creator only          | Only after the review period, and only if still unresolved.      |
 
-The repository has two independent workspaces:
+## 6. Escrow and payout mechanism
 
-- **Frontend** (repo root): Next.js App Router app in `src/`. It reads chain state and sends transactions through wagmi and viem.
-- **Contracts** (`contracts/`): Foundry workspace. `ProofBounty.sol` holds the escrow lifecycle. `SubmissionCredibility.sol` stores credibility signals and reads submissions from `ProofBounty`. `TestUSD.sol` is the test reward token. It uses OpenZeppelin for `SafeERC20` and `ReentrancyGuard`.
+- `createBounty` pulls the reward with `SafeERC20.safeTransferFrom` and holds it in the contract.
+- `selectWinner` sets the bounty to `Completed`, then transfers the reward to the winner with `safeTransfer`. State is updated before the transfer.
+- `refund` sets the bounty to `Refunded`, then returns the reward to the creator.
+- `ReentrancyGuard` protects every state-changing function.
+- The UI shows a payout only after the chain reports the bounty as `Completed`. The transaction panel shows "Pending" until the receipt confirms.
 
-The frontend consumes the contract ABIs through `npm run abi:sync`, which copies both compiled ABIs from `contracts/out` into `src/lib/contracts/abi.ts`. Contract addresses come from the environment.
+## 7. Reputation and work-history model
 
-### Data sources
+Deliberately simple, and computed from on-chain facts only:
 
-There is no backend or indexer. The browser reads state directly from the contracts:
+- **Bounties won**: `WinnerSelected` events where the wallet is the winner.
+- **Completed bounties**: bounties the wallet submitted to that were completed.
+- **Total rewards earned**: sum of rewards paid to the wallet.
+- **Credible signals received**: shown as supporting context only. It never changes payouts, and it never lowers reputation.
 
-- **Bounties and submissions** are read in one batched Multicall3 request and refreshed every 15 seconds.
-- **Activity, credibility counts, and settlement links** come from contract events. The browser scans the logs in 100-block ranges (the public RPC limit), starting at the deploy block, and caches them in `localStorage`. The first visit can take a minute or two. Later visits only fetch new blocks.
+Work history lists each win with its reward, completion time, and a Monadscan link.
 
-## Tech stack
+## 8. ERC-8004 integration boundary
 
-| Layer      | Technology                                          |
-| ---------- | --------------------------------------------------- |
-| Frontend   | Next.js 16 (App Router), React 19, TypeScript       |
-| UI         | Tailwind CSS v4, Geist font via `next/font`         |
-| Blockchain | viem, wagmi, TanStack Query                         |
-| Wallet     | Injected wallets (MetaMask and others)              |
-| Contracts  | Solidity 0.8.28, Foundry, OpenZeppelin 5.1          |
-| Network    | Monad Testnet (chain ID 10143)                      |
-| Quality    | ESLint, Prettier with `prettier-plugin-tailwindcss` |
+Not implemented. ERC-8004 identity and reputation registries are a future extension. The current reputation is wallet-linked and derived from ProofBounty events, which could later be published to an ERC-8004 registry. No ERC-8004 code or addresses are used.
 
-## Folder structure
+## 9. x402 future role
 
-```
-.
-├── contracts/              Foundry workspace
-│   ├── src/                ProofBounty.sol, SubmissionCredibility.sol, TestUSD.sol
-│   ├── test/               Foundry tests
-│   ├── script/             Deploy scripts
-│   └── foundry.toml
-├── scripts/                Repo tooling (ABI sync)
-├── src/
-│   ├── app/                Routes: board (/), post, bounty/[id], profile, my-bounties
-│   ├── components/         ui, bounty, submission, forms, activity, profile, layout
-│   ├── hooks/              wallet, bounty, activity, transaction
-│   ├── lib/
-│   │   ├── config/         chain, env validation, reward token
-│   │   ├── contracts/      generated ABIs, contract addresses
-│   │   ├── blockchain/     wagmi config, reads, writes, event index, error classification
-│   │   └── utils/          formatting, credibility, activity, reputation
-│   ├── types/              Bounty, Submission, ChainEvent, TransactionState
-│   └── constants/          Bounty categories, selection methods, status labels
-└── docs/                   Product and hackathon notes
-```
+Not used for escrow or payouts. A future role is paid metadata: an agent or service could pay per request through x402 for bounty discovery or external evaluation, while escrow stays in ProofBounty.
 
-## Prerequisites
+## 10. Monad Testnet
 
-- Node.js 20.9 or later, and npm
-- [Foundry](https://getfoundry.sh) (`forge`, `cast`)
-- A browser wallet (for example MetaMask) with Monad Testnet MON from the [faucet](https://faucet.monad.xyz)
+| Item     | Value                         |
+| -------- | ----------------------------- |
+| Chain ID | 10143                         |
+| Currency | MON                           |
+| RPC      | https://testnet-rpc.monad.xyz |
+| Explorer | https://testnet.monadscan.com |
+| Faucet   | https://faucet.monad.xyz      |
 
-## Install and run locally
+The app is configured for this chain only. A wrong-network banner offers to switch, and every write checks the chain before sending.
+
+## 11. Contract addresses
+
+| Contract                                  | Address                                      | Verification          |
+| ----------------------------------------- | -------------------------------------------- | --------------------- |
+| ProofBounty (escrow, 120 s review period) | `0x18B257eF370A2Cd9f600d874d00FEbbCcc25bAf0` | Sourcify: exact match |
+| SubmissionCredibility                     | `0x19b607De70fBB2a6c12Fa2c5697FC400fe48eC57` | Sourcify: exact match |
+| TestUSD (reward token, tUSD)              | `0xCe233f627834e017097feFB53f4dfD2085A9B988` | Sourcify: exact match |
+
+Check any address on [Monadscan](https://testnet.monadscan.com/address/0x18B257eF370A2Cd9f600d874d00FEbbCcc25bAf0).
+
+**Superseded deployments (do not use):** the earlier ProofBounty `0xEc238754ffb9a846Ba52718D0a78E72878747702` (one-hour review period) and its credibility contract `0xAB010c9Bfdc5513ecADC95f66AEc0C6070bF15F6` were replaced for demo timing. The app does not reference them. Bounties on those contracts are not shown.
+
+## 12. Live URL
+
+`https://<your-vercel-project>.vercel.app` (placeholder: set after deploying, see below)
+
+## 13. How to run locally
+
+Prerequisites: Node.js 20.9+, npm, [Foundry](https://getfoundry.sh), and a browser wallet with Monad Testnet MON from the faucet.
 
 ```bash
 npm install
-cp .env.example .env.local
-npm run dev
+cp .env.example .env.local      # then fill in the addresses below
+npm run dev                      # http://localhost:3000
 ```
 
-Open http://localhost:3000 to see the bounty board.
+Set these in `.env.local` (values are the deployed addresses above):
 
-The header has a **Connect wallet** button. Once connected, it shows the wallet's MON balance and address. If the wallet is on another network, a banner offers a **Switch network** button for Monad Testnet.
+```
+NEXT_PUBLIC_MONAD_RPC_URL=https://testnet-rpc.monad.xyz
+NEXT_PUBLIC_PROOFBOUNTY_ADDRESS=0x18B257eF370A2Cd9f600d874d00FEbbCcc25bAf0
+NEXT_PUBLIC_CREDIBILITY_ADDRESS=0x19b607De70fBB2a6c12Fa2c5697FC400fe48eC57
+NEXT_PUBLIC_PROOFBOUNTY_DEPLOY_BLOCK=69793560
+```
 
-## Environment variables
-
-Copy `.env.example` to `.env.local` for the frontend. Never commit real `.env` files.
-
-| Variable                               | Required     | Purpose                                                                         |
-| -------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_MONAD_RPC_URL`            | No           | Monad Testnet RPC for the browser. Defaults to `https://testnet-rpc.monad.xyz`. |
-| `NEXT_PUBLIC_PROOFBOUNTY_ADDRESS`      | After deploy | Deployed ProofBounty contract address (`0x…`).                                  |
-| `NEXT_PUBLIC_CREDIBILITY_ADDRESS`      | After deploy | Deployed SubmissionCredibility contract address (`0x…`).                        |
-| `NEXT_PUBLIC_PROOFBOUNTY_DEPLOY_BLOCK` | Recommended  | Block of the ProofBounty deploy. The activity index starts here.                |
-| `MONAD_TESTNET_RPC_URL`                | Deploy only  | RPC used by Foundry (`contracts/foundry.toml`).                                 |
-| `DEPLOYER_PRIVATE_KEY`                 | Deploy only  | Deployer key, used by the deploy command. Never use the `NEXT_PUBLIC_` prefix.  |
-
-`NEXT_PUBLIC_*` values are public and end up in the browser bundle. Deployment keys must never use that prefix.
-
-Values are validated in `src/lib/config/env.ts`. An invalid URL or address stops the app with a clear error.
-
-## Quality checks
+Contract tests and deployment:
 
 ```bash
-npm run typecheck        # next typegen + tsc --noEmit
-npm run lint             # ESLint
-npm run format:check     # Prettier
-npm run check            # all three
-npm run build            # production build
+npm run contracts:install        # fetch forge-std and OpenZeppelin (not committed)
+npm run contracts:test           # 30 tests
+npm run abi:sync                 # regenerate the frontend ABIs after changing contracts
 ```
 
-Use `npm run format` to apply Prettier.
-
-## Contracts
-
-Dependencies in `contracts/lib` are not committed. Restore them once after cloning:
+Checks and build:
 
 ```bash
-npm run contracts:install
+npm run check                    # typecheck + lint + format check
+npm run build
 ```
 
-```bash
-npm run contracts:build  # forge build
-npm run contracts:test   # forge test -vv
-npm run contracts:fmt    # forge fmt --check
-```
+**Vercel:** import the repo, keep the Next.js preset, and set the four `NEXT_PUBLIC_*` variables above in Project Settings → Environment Variables. Do not add deployer keys. `NEXT_PUBLIC_*` values are read at build time, so redeploy after changing them.
 
-### Deploy to Monad Testnet
+## 14. Known limitations
 
-1. Fund the deployer address with testnet MON from the [faucet](https://faucet.monad.xyz).
-2. Load the environment and deploy from the `contracts` directory. The review period is in seconds, and the default is one day:
-
-   ```bash
-   cd contracts
-   set -a && . ../.env && set +a
-   REVIEW_PERIOD=3600 forge script script/ProofBounty.s.sol:DeployProofBounty \
-     --rpc-url "$MONAD_TESTNET_RPC_URL" \
-     --private-key "$DEPLOYER_PRIVATE_KEY" \
-     --broadcast
-   cd ..
-   ```
-
-   For a keystore instead of a raw key, run `cast wallet import monad-deployer --private-key <KEY>` once and replace `--private-key "$DEPLOYER_PRIVATE_KEY"` with `--account monad-deployer`.
-
-3. Copy the printed `ProofBounty deployed at` address and check it on [Monadscan](https://testnet.monadscan.com).
-
-### Deploy the credibility contract
-
-Run after ProofBounty is deployed. It takes the ProofBounty address from the environment:
-
-```bash
-cd contracts
-set -a && . ../.env && set +a
-PROOFBOUNTY_ADDRESS=$NEXT_PUBLIC_PROOFBOUNTY_ADDRESS forge script script/SubmissionCredibility.s.sol:DeploySubmissionCredibility \
-  --rpc-url "$MONAD_TESTNET_RPC_URL" --private-key "$DEPLOYER_PRIVATE_KEY" --broadcast
-cd ..
-```
-
-Then set `NEXT_PUBLIC_CREDIBILITY_ADDRESS` and run `npm run abi:sync`.
-
-### Test reward token
-
-The reward is paid in `tUSD`, a 6-decimal test ERC-20 (`contracts/src/TestUSD.sol`). Deploy it once, then mint to any wallet with `mint(address,uint256)`. The deployer receives 1,000 tUSD on deploy:
-
-```bash
-cd contracts
-set -a && . ../.env && set +a
-forge script script/TestUSD.s.sol:DeployTestUSD --rpc-url "$MONAD_TESTNET_RPC_URL" --private-key "$DEPLOYER_PRIVATE_KEY" --broadcast
-cd ..
-```
-
-### Connect the deployed contract to the frontend
-
-1. Set `NEXT_PUBLIC_PROOFBOUNTY_ADDRESS` and `NEXT_PUBLIC_CREDIBILITY_ADDRESS` in `.env.local` to the deployed addresses, and set `NEXT_PUBLIC_PROOFBOUNTY_DEPLOY_BLOCK` to the ProofBounty deploy block.
-2. Regenerate the ABI from the build:
-
-   ```bash
-   npm run abi:sync
-   ```
-
-3. Restart `npm run dev`.
-
-### Known limits
-
-- **Review period** is fixed in the deployed ProofBounty contract. The current deployment uses one hour for testing. Redeploy with `REVIEW_PERIOD` to change it.
-- **Event index** scans 100 blocks per request. Very old history takes longer on first load.
-- **Wallet testing** covers injected wallets. Mobile wallets and WalletConnect are not set up.
-
-## Deploy the frontend on Vercel
-
-1. Import this repository in [Vercel](https://vercel.com/new).
-2. Set the framework preset to Next.js. The default build command is `npm run build`.
-3. Add the environment variables `NEXT_PUBLIC_MONAD_RPC_URL` and `NEXT_PUBLIC_PROOFBOUNTY_ADDRESS` in **Project Settings → Environment Variables**. Do not add deployer keys.
-4. Deploy. Vercel rebuilds on each push to the connected branch.
-
-## Network reference (Monad Testnet)
-
-| Item         | Value                                                                      |
-| ------------ | -------------------------------------------------------------------------- |
-| Chain ID     | 10143                                                                      |
-| Currency     | MON                                                                        |
-| RPC          | https://testnet-rpc.monad.xyz                                              |
-| Explorer     | https://testnet.monadscan.com                                              |
-| Faucet       | https://faucet.monad.xyz                                                   |
-| Reward token | tUSD `0xCe233f627834e017097feFB53f4dfD2085A9B988` (6 decimals, test token) |
-
-Source: [Monad docs](https://docs.monad.xyz/developer-essentials/testnet).
-
-## License
-
-See [LICENSE](LICENSE).
+- **Review period is 120 seconds on the live deployment** for demo speed. Redeploy with `REVIEW_PERIOD` to change it.
+- **Activity and work history load slowly on first visit.** The public RPC allows only 100-block log queries, so the browser scans history once and caches it. Expect one to two minutes on a fresh browser.
+- **Tested with an injected wallet in a scripted browser,** not with MetaMask directly.
+- **Mobile wallets and WalletConnect** are not set up.
+- **Credibility** is one signal per wallet, with no weighting or reputation effect, by design.
+- **Reward token** is a test ERC-20 with open minting. It has no real value.
+- **Contract verification** uses Sourcify. Monadscan's own verification was not run.

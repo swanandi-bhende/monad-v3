@@ -23,7 +23,7 @@ export function ActivityFeed({ events, emptyText }: { events: ChainEvent[]; empt
         >
           <div className="flex min-w-0 items-center gap-3">
             <span className="bg-accent size-1.5 shrink-0 rounded-full" />
-            <Link href={`/bounty/${event.bountyId}`} className="hover:text-accent truncate">
+            <Link href={`/bounty/${event.bountyId}`} className="hover:text-ink truncate">
               {describeEvent(event)}
             </Link>
           </div>

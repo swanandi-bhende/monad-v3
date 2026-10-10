@@ -1,7 +1,7 @@
 import { parseEventLogs, type Hash, type TransactionReceipt } from "viem";
 import { waitForTransactionReceipt } from "wagmi/actions";
 import { wagmiConfig } from "@/lib/blockchain/wagmi";
-import { PROOFBOUNTY_ABI } from "@/lib/contracts/abi";
+import { GIGACHAD_ABI } from "@/lib/contracts/abi";
 import { MONAD_TESTNET } from "@/lib/config/chain";
 
 export function waitForTx(hash: Hash): Promise<TransactionReceipt> {
@@ -18,7 +18,7 @@ export function addressUrl(address: string) {
 
 export function bountyIdFromReceipt(receipt: TransactionReceipt) {
   const [event] = parseEventLogs({
-    abi: PROOFBOUNTY_ABI,
+    abi: GIGACHAD_ABI,
     logs: receipt.logs,
     eventName: "BountyCreated",
   });

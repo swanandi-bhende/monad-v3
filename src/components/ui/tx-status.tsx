@@ -20,38 +20,40 @@ export function TxStatus({ state, label }: { state: TransactionState; label?: st
   if (state.status === "idle") return null;
 
   const isFailed = state.status === "failed";
+  const isConfirmed = state.status === "confirmed";
+  const isBusy = !isFailed && !isConfirmed;
   const title = isFailed
     ? FAILURE_TITLE[state.errorKind ?? "unknown"]
     : PROGRESS[state.status as keyof typeof PROGRESS];
-  const tone = isFailed
-    ? "text-danger"
-    : state.status === "confirmed"
-      ? "text-status-open"
-      : "text-muted";
+  const dot = isFailed ? "bg-danger" : isConfirmed ? "bg-status-open" : "bg-accent";
 
   return (
     <div
       role="status"
-      className="fade-in border-line bg-surface-raised rounded-md border px-4 py-3"
+      className="fade-in border-line/80 bg-surface flex gap-4 rounded-xl border p-5"
     >
-      <p className={`text-caption flex items-center gap-2 font-medium ${tone}`}>
-        {!isFailed && state.status !== "confirmed" && (
-          <span className="bg-accent size-1.5 animate-pulse rounded-full" />
-        )}
-        {label ? `${label}: ` : ""}
-        {title}
-      </p>
-      {isFailed && state.error && <p className="text-caption text-danger mt-1">{state.error}</p>}
-      {state.hash && (
-        <a
-          href={txUrl(state.hash)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-caption text-accent mt-2 inline-block font-mono hover:underline"
+      <span
+        className={`mt-1.5 size-2.5 shrink-0 rounded-full ${dot} ${isBusy ? "animate-pulse" : ""}`}
+      />
+      <div className="min-w-0 space-y-1.5">
+        <p
+          className={`text-body font-medium ${isFailed ? "text-danger" : isConfirmed ? "text-status-open" : "text-ink"}`}
         >
-          {state.hash.slice(0, 12)}…{state.hash.slice(-6)} ↗ Monadscan
-        </a>
-      )}
+          {label ? `${label}: ` : ""}
+          {title}
+        </p>
+        {isFailed && state.error && <p className="text-caption text-muted">{state.error}</p>}
+        {state.hash && (
+          <a
+            href={txUrl(state.hash)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-caption text-ink decoration-accent inline-block font-mono underline decoration-2 underline-offset-4"
+          >
+            {state.hash.slice(0, 12)}…{state.hash.slice(-6)} ↗ Monadscan
+          </a>
+        )}
+      </div>
     </div>
   );
 }

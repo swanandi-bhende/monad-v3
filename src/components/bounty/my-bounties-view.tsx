@@ -7,14 +7,15 @@ import { StatusBadge } from "@/components/bounty/status-badge";
 import { Card } from "@/components/ui/card";
 import { ConnectPrompt } from "@/components/ui/connect-prompt";
 import { FilterChips } from "@/components/ui/chips";
-import { QueryError } from "@/components/ui/query-error";
+import { ErrorState, LoadingState } from "@/components/ui/state";
+import { useChainEvents } from "@/hooks/activity/use-chain-events";
 import { useBounties } from "@/hooks/bounty/use-bounties";
 import { useWallet } from "@/hooks/wallet/use-wallet";
 import { formatDateTime, formatReward } from "@/lib/utils/format";
 import { sameAddress, submissionsBy } from "@/lib/utils/profile";
 import type { BountyWithSubmissions } from "@/types/bounty";
 
-type Tab = "posted" | "submitted";
+type Tab = "posted" | "submitted" | "reviewed";
 type PostedFilter = "open" | "completed" | "expired";
 type SubmittedFilter = "pending" | "selected" | "not_selected";
 
@@ -30,6 +31,12 @@ const SUBMITTED_OPTIONS: { value: SubmittedFilter; label: string }[] = [
   { value: "not_selected", label: "Not selected" },
 ];
 
+const OUTCOME_LABEL: Record<SubmittedFilter, string> = {
+  pending: "Pending",
+  selected: "Selected",
+  not_selected: "Not selected",
+};
+
 function postedMatches(bounty: BountyWithSubmissions, filter: PostedFilter) {
   if (filter === "open") return bounty.status === "open" || bounty.status === "under_review";
   if (filter === "completed") return bounty.status === "completed";
@@ -42,71 +49,64 @@ function outcome(bounty: BountyWithSubmissions, address: `0x${string}`): Submitt
   return "pending";
 }
 
-const OUTCOME_LABEL: Record<SubmittedFilter, string> = {
-  pending: "Pending",
-  selected: "Selected",
-  not_selected: "Not selected",
-};
-
 export function MyBountiesView() {
   const { address } = useWallet();
   const bounties = useBounties();
+  const events = useChainEvents();
   const [tab, setTab] = useState<Tab>("posted");
   const [postedFilter, setPostedFilter] = useState<PostedFilter>("open");
   const [submittedFilter, setSubmittedFilter] = useState<SubmittedFilter>("pending");
 
   if (!address)
     return (
-      <ConnectPrompt message="Connect a wallet to see the bounties you posted or submitted to." />
+      <ConnectPrompt message="Connect a wallet to see the bounties you posted, submitted to, or reviewed." />
     );
-  if (bounties.isPending) return <p className="text-muted">Loading your bounties…</p>;
+  if (bounties.isPending) return <LoadingState label="Loading your bounties…" />;
   if (bounties.isError)
-    return <QueryError error={bounties.error} onRetry={() => bounties.refetch()} />;
+    return <ErrorState error={bounties.error} onRetry={() => bounties.refetch()} />;
 
   const all = bounties.data;
   const posted = all.filter((b) => sameAddress(b.creator, address));
   const submitted = submissionsBy(all, address);
+  const reviewed = (events.data ?? []).filter(
+    (e) => e.kind === "reviewed" && sameAddress(e.actor, address),
+  );
   const postedVisible = posted.filter((b) => postedMatches(b, postedFilter));
   const submittedVisible = submitted.filter(
     ({ bounty }) => outcome(bounty, address) === submittedFilter,
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap gap-2">
-        {(["posted", "submitted"] as const).map((value) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => setTab(value)}
-            className={`text-caption rounded-full border px-4 py-1.5 transition-colors ${
-              tab === value
-                ? "border-accent bg-accent/15 text-ink"
-                : "border-line text-muted hover:text-ink"
-            }`}
-          >
-            {value === "posted"
-              ? `Posted by me (${posted.length})`
-              : `Submitted by me (${submitted.length})`}
-          </button>
-        ))}
-      </div>
+    <div className="space-y-8">
+      <FilterChips
+        options={[
+          { value: "posted" as const, label: `Posted by me (${posted.length})` },
+          { value: "submitted" as const, label: `Submitted by me (${submitted.length})` },
+          { value: "reviewed" as const, label: `Reviewed by me (${reviewed.length})` },
+        ]}
+        value={tab}
+        onChange={setTab}
+      />
 
       {tab === "posted" && (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <FilterChips options={POSTED_OPTIONS} value={postedFilter} onChange={setPostedFilter} />
           {postedVisible.length === 0 ? (
             <Card>
               <p className="text-body text-muted">
                 No {POSTED_OPTIONS.find((o) => o.value === postedFilter)?.label.toLowerCase()}{" "}
                 bounties.{" "}
-                <Link href="/post" className="text-accent hover:underline">
-                  Post a bounty
+                <Link
+                  href="/post"
+                  className="decoration-accent underline decoration-2 underline-offset-4"
+                >
+                  Post one
                 </Link>
+                .
               </p>
             </Card>
           ) : (
-            <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2">
               {postedVisible.map((bounty) => (
                 <BountyCard key={bounty.id.toString()} bounty={bounty} />
               ))}
@@ -116,7 +116,7 @@ export function MyBountiesView() {
       )}
 
       {tab === "submitted" && (
-        <div className="space-y-5">
+        <div className="space-y-6">
           <FilterChips
             options={SUBMITTED_OPTIONS}
             value={submittedFilter}
@@ -134,10 +134,10 @@ export function MyBountiesView() {
                 <Link
                   key={`${bounty.id}-${submission.index}`}
                   href={`/bounty/${bounty.id}`}
-                  className="hover:bg-surface-raised flex flex-wrap items-center justify-between gap-4 px-5 py-4 transition-colors"
+                  className="hover:bg-canvas flex flex-wrap items-center justify-between gap-4 px-6 py-5 transition-colors"
                 >
                   <div className="min-w-0">
-                    <p className="text-body truncate font-medium">{bounty.title}</p>
+                    <p className="font-display truncate text-2xl">{bounty.title}</p>
                     <p className="text-caption text-muted mt-1">
                       Submitted {formatDateTime(submission.submittedAt)} ·{" "}
                       {formatReward(bounty.rewardAmount)}
@@ -155,6 +155,47 @@ export function MyBountiesView() {
           )}
         </div>
       )}
+
+      {tab === "reviewed" &&
+        (reviewed.length === 0 ? (
+          <Card>
+            <p className="text-body text-muted">
+              You have not reviewed any work yet.{" "}
+              <Link
+                href="/review"
+                className="decoration-accent underline decoration-2 underline-offset-4"
+              >
+                Review &amp; earn
+              </Link>
+              .
+            </p>
+          </Card>
+        ) : (
+          <Card className="divide-line divide-y p-0">
+            {reviewed.map((event) => {
+              const bounty = all.find((b) => Number(b.id) === event.bountyId);
+              return (
+                <Link
+                  key={event.txHash + event.logIndex}
+                  href={`/review/${event.bountyId}`}
+                  className="hover:bg-canvas flex flex-wrap items-center justify-between gap-4 px-6 py-5 transition-colors"
+                >
+                  <div className="min-w-0">
+                    <p className="font-display truncate text-2xl">
+                      {bounty?.title ?? `Bounty #${event.bountyId}`}
+                    </p>
+                    <p className="text-caption text-muted mt-1">
+                      Reviewed {event.timestamp ? formatDateTime(event.timestamp) : "—"}
+                    </p>
+                  </div>
+                  <span className="text-body font-mono">
+                    {formatReward(BigInt(event.amount ?? 0))}
+                  </span>
+                </Link>
+              );
+            })}
+          </Card>
+        ))}
     </div>
   );
 }

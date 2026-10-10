@@ -14,9 +14,7 @@ export function BountyCard({ bounty }: { bounty: BountyWithSubmissions }) {
             <p className="text-caption text-muted">
               #{bounty.id.toString()} · {bounty.category}
             </p>
-            <h3 className="text-title mt-1 truncate font-semibold tracking-tight">
-              {bounty.title}
-            </h3>
+            <h3 className="font-display text-title mt-1 truncate tracking-tight">{bounty.title}</h3>
           </div>
           <StatusBadge status={bounty.status} />
         </div>

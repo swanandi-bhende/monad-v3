@@ -1,10 +1,10 @@
-# ProofBounty
+# Gig-a-Chad
 
-**Post work. Compete to deliver. Prove the outcome. Get paid.**
+**Post the work. Prove it on-chain. Get paid.**
 
 Submission for Monad Blitz Pune V3 (2026). Runs on **Monad Testnet** (chain ID 10143) only.
 
-## 1. What ProofBounty is
+## 1. What Gig-a-Chad is
 
 A permissionless bounty marketplace on Monad. A creator posts a task and locks an ERC-20 reward in a smart contract. Anyone can submit work before the deadline. The creator picks a winner, and the contract pays the reward straight to that wallet.
 
@@ -60,11 +60,11 @@ Work history lists each win with its reward, completion time, and a Monadscan li
 
 ## 8. ERC-8004 integration boundary
 
-Not implemented. ERC-8004 identity and reputation registries are a future extension. The current reputation is wallet-linked and derived from ProofBounty events, which could later be published to an ERC-8004 registry. No ERC-8004 code or addresses are used.
+Not implemented. ERC-8004 identity and reputation registries are a future extension. The current reputation is wallet-linked and derived from escrow contract events, which could later be published to an ERC-8004 registry. No ERC-8004 code or addresses are used.
 
 ## 9. x402 future role
 
-Not used for escrow or payouts. A future role is paid metadata: an agent or service could pay per request through x402 for bounty discovery or external evaluation, while escrow stays in ProofBounty.
+Not used for escrow or payouts. A future role is paid metadata: an agent or service could pay per request through x402 for bounty discovery or external evaluation, while escrow stays on-chain.
 
 ## 10. Monad Testnet
 
@@ -80,11 +80,11 @@ The app is configured for this chain only. A wrong-network banner offers to swit
 
 ## 11. Contract addresses
 
-| Contract                                  | Address                                      | Verification          |
-| ----------------------------------------- | -------------------------------------------- | --------------------- |
-| ProofBounty (escrow, 120 s review period) | `0x18B257eF370A2Cd9f600d874d00FEbbCcc25bAf0` | Sourcify: exact match |
-| SubmissionCredibility                     | `0x19b607De70fBB2a6c12Fa2c5697FC400fe48eC57` | Sourcify: exact match |
-| TestUSD (reward token, tUSD)              | `0xCe233f627834e017097feFB53f4dfD2085A9B988` | Sourcify: exact match |
+| Contract                                           | Address                                      | Verification          |
+| -------------------------------------------------- | -------------------------------------------- | --------------------- |
+| ProofBounty contract (escrow, 120 s review period) | `0x18B257eF370A2Cd9f600d874d00FEbbCcc25bAf0` | Sourcify: exact match |
+| SubmissionCredibility                              | `0x19b607De70fBB2a6c12Fa2c5697FC400fe48eC57` | Sourcify: exact match |
+| TestUSD (reward token, tUSD)                       | `0xCe233f627834e017097feFB53f4dfD2085A9B988` | Sourcify: exact match |
 
 Check any address on [Monadscan](https://testnet.monadscan.com/address/0x18B257eF370A2Cd9f600d874d00FEbbCcc25bAf0).
 
@@ -92,7 +92,7 @@ Check any address on [Monadscan](https://testnet.monadscan.com/address/0x18B257e
 
 ## 12. Live URL
 
-`https://<your-vercel-project>.vercel.app` (placeholder: set after deploying, see below)
+https://monad-v3-anvv4hx20-swanandi-bhendes-projects.vercel.app
 
 ## 13. How to run locally
 

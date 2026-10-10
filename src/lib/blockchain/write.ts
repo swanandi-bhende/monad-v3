@@ -1,11 +1,10 @@
 import { erc20Abi, type Address, type Hash } from "viem";
 import { getAccount, readContract, writeContract } from "wagmi/actions";
 import { wagmiConfig } from "@/lib/blockchain/wagmi";
-import { CREDIBILITY_ABI, PROOFBOUNTY_ABI } from "@/lib/contracts/abi";
-import { getCredibilityAddress, getProofBountyAddress } from "@/lib/contracts/addresses";
+import { GIGACHAD_ABI, TESTUSDC_ABI } from "@/lib/contracts/abi";
+import { getEscrowAddress } from "@/lib/contracts/addresses";
+import { REWARD_TOKEN } from "@/lib/config/tokens";
 import type { BountyMetadata } from "@/types/bounty";
-
-const SIGNAL_CODE = { credible: 1, low_quality: 2 } as const;
 
 export function connectedAccount(): Address {
   const address = getAccount(wagmiConfig).address;
@@ -18,7 +17,7 @@ export async function needsApproval(token: Address, amount: bigint) {
     address: token,
     abi: erc20Abi,
     functionName: "allowance",
-    args: [connectedAccount(), getProofBountyAddress()],
+    args: [connectedAccount(), getEscrowAddress()],
   });
   return allowance < amount;
 }
@@ -28,7 +27,15 @@ export function approveSpend(token: Address, amount: bigint): Promise<Hash> {
     address: token,
     abi: erc20Abi,
     functionName: "approve",
-    args: [getProofBountyAddress(), amount],
+    args: [getEscrowAddress(), amount],
+  });
+}
+
+export function claimTestUsdc(): Promise<Hash> {
+  return writeContract(wagmiConfig, {
+    address: REWARD_TOKEN.address,
+    abi: TESTUSDC_ABI,
+    functionName: "claim",
   });
 }
 
@@ -36,29 +43,45 @@ export function createBounty(input: {
   token: Address;
   reward: bigint;
   deadline: number;
+  reviewSlots: number;
   metadata: BountyMetadata;
 }): Promise<Hash> {
   return writeContract(wagmiConfig, {
-    address: getProofBountyAddress(),
-    abi: PROOFBOUNTY_ABI,
+    address: getEscrowAddress(),
+    abi: GIGACHAD_ABI,
     functionName: "createBounty",
-    args: [input.token, input.reward, BigInt(input.deadline), JSON.stringify(input.metadata)],
+    args: [
+      input.token,
+      input.reward,
+      BigInt(input.deadline),
+      input.reviewSlots,
+      JSON.stringify(input.metadata),
+    ],
   });
 }
 
 export function submitWork(bountyId: bigint, evidence: string): Promise<Hash> {
   return writeContract(wagmiConfig, {
-    address: getProofBountyAddress(),
-    abi: PROOFBOUNTY_ABI,
+    address: getEscrowAddress(),
+    abi: GIGACHAD_ABI,
     functionName: "submitWork",
     args: [bountyId, evidence],
   });
 }
 
+export function submitReview(bountyId: bigint, scores: number[], feedback: string): Promise<Hash> {
+  return writeContract(wagmiConfig, {
+    address: getEscrowAddress(),
+    abi: GIGACHAD_ABI,
+    functionName: "submitReview",
+    args: [bountyId, scores, feedback],
+  });
+}
+
 export function selectWinner(bountyId: bigint, submissionIndex: number): Promise<Hash> {
   return writeContract(wagmiConfig, {
-    address: getProofBountyAddress(),
-    abi: PROOFBOUNTY_ABI,
+    address: getEscrowAddress(),
+    abi: GIGACHAD_ABI,
     functionName: "selectWinner",
     args: [bountyId, BigInt(submissionIndex)],
   });
@@ -66,22 +89,9 @@ export function selectWinner(bountyId: bigint, submissionIndex: number): Promise
 
 export function refundBounty(bountyId: bigint): Promise<Hash> {
   return writeContract(wagmiConfig, {
-    address: getProofBountyAddress(),
-    abi: PROOFBOUNTY_ABI,
+    address: getEscrowAddress(),
+    abi: GIGACHAD_ABI,
     functionName: "refund",
     args: [bountyId],
-  });
-}
-
-export function markSubmission(
-  bountyId: bigint,
-  submissionIndex: number,
-  signal: keyof typeof SIGNAL_CODE,
-): Promise<Hash> {
-  return writeContract(wagmiConfig, {
-    address: getCredibilityAddress(),
-    abi: CREDIBILITY_ABI,
-    functionName: "mark",
-    args: [bountyId, BigInt(submissionIndex), SIGNAL_CODE[signal]],
   });
 }

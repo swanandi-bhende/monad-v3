@@ -12,6 +12,16 @@ import type { TransactionErrorKind } from "@/types/transaction";
 type ClassifiedError = { kind: TransactionErrorKind; message: string };
 
 const REVERT_MESSAGES: Record<string, string> = {
+  ReviewWindowNotOpen: "Reviews open once the submission deadline has passed.",
+  SubmissionWindowOpen: "Winners can be selected after the submission deadline.",
+  CreatorCannotReview: "The creator cannot review their own bounty.",
+  AlreadyReviewed: "You already reviewed this bounty.",
+  ReviewSlotsFull: "All review slots for this bounty are filled.",
+  ConflictOfInterest: "Submitters cannot review their own bounty.",
+  ScoreCountMismatch: "Score every submission before you submit the review.",
+  InvalidScore: "Scores must be between 0 and 100.",
+  NoSubmissions: "There is nothing to review yet.",
+  EmptyEvidence: "Submission evidence cannot be empty.",
   NotCreator: "Only the bounty creator can do this.",
   NotOpen: "This bounty is already settled.",
   SubmissionWindowClosed: "The submission deadline has passed.",
@@ -25,10 +35,7 @@ const REVERT_MESSAGES: Record<string, string> = {
   InvalidReward: "The reward must be greater than zero.",
   InvalidToken: "The reward token is invalid.",
   OwnSubmission: "You cannot mark your own submission.",
-  AlreadyMarked: "You already marked this submission.",
-  SubmissionNotFound: "That submission does not exist.",
-  InvalidSignal: "That signal is not valid.",
-  ERC20InsufficientBalance: "Not enough tUSD in your wallet.",
+  ERC20InsufficientBalance: "Not enough USDC in your wallet. Claim test USDC on the post page.",
   ERC20InsufficientAllowance: "Token approval is too low. Approve the amount and try again.",
 };
 

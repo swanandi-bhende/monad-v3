@@ -1,13 +1,15 @@
 import type { ButtonHTMLAttributes } from "react";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "danger";
+  variant?: "primary" | "secondary" | "ghost" | "danger" | "dark";
 };
 
 const VARIANTS = {
-  primary: "bg-accent text-accent-ink hover:bg-accent-hover",
-  secondary: "border border-line text-ink hover:bg-surface-raised",
-  danger: "bg-danger/90 text-canvas hover:bg-danger",
+  primary: "bg-accent text-accent-ink hover:bg-accent/90",
+  secondary: "glass border border-white text-ink hover:bg-white",
+  ghost: "text-ink hover:bg-ink/5",
+  danger: "bg-danger text-accent-ink hover:bg-danger/90",
+  dark: "bg-ink text-canvas hover:bg-ink/90",
 };
 
 export function Button({ variant = "primary", className = "", ...props }: ButtonProps) {
@@ -15,7 +17,7 @@ export function Button({ variant = "primary", className = "", ...props }: Button
     <button
       type="button"
       {...props}
-      className={`text-caption inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${VARIANTS[variant]} ${className}`}
+      className={`text-body rounded-pill inline-flex items-center justify-center gap-2 px-5 py-2.5 font-medium transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 ${VARIANTS[variant]} ${className}`}
     />
   );
 }

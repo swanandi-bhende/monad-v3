@@ -1,13 +1,15 @@
 import type { Address, Hash } from "viem";
 
 export type ChainEvent = {
-  kind: "created" | "submitted" | "winner" | "refunded" | "credibility";
+  kind: "created" | "submitted" | "reviewed" | "winner" | "refunded";
   bountyId: number;
   actor: Address;
   submissionIndex?: number;
   amount?: string;
+  fee?: string;
   title?: string;
-  signal?: "credible" | "low_quality";
+  feedback?: string;
+  reviewNumber?: number;
   txHash: Hash;
   blockNumber: number;
   logIndex: number;

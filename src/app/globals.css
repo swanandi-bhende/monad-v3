@@ -1,57 +1,99 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #07080c;
-  --color-surface: #0f1118;
-  --color-surface-raised: #161923;
-  --color-line: #232733;
-  --color-ink: #eef0f6;
-  --color-muted: #8b91a3;
-  --color-accent: #7c5cff;
-  --color-accent-hover: #8f74ff;
+  --color-canvas: #fdf8f8;
+  --color-surface: #ffffffb3;
+  --color-surface-raised: #f1edec;
+  --color-line: #c7c6ca;
+  --color-ink: #1d1d1f;
+  --color-muted: #77767b;
+  --color-accent: #2a81ff;
+  --color-accent-hover: #1d6fe0;
   --color-accent-ink: #ffffff;
-  --color-danger: #ff6b6b;
+  --color-danger: #ba1a1a;
+  --color-success: #059669;
+  --color-warning: #c2410c;
+  --color-info: #1d4ed8;
 
-  --color-status-open: #5fd4a3;
-  --color-status-open-bg: #0f2a22;
-  --color-status-review: #f2c46d;
-  --color-status-review-bg: #2a2412;
-  --color-status-completed: #8fb4ff;
-  --color-status-completed-bg: #15213b;
-  --color-status-expired: #ff9b8a;
-  --color-status-expired-bg: #2d1815;
-  --color-status-refunded: #b3b8c6;
-  --color-status-refunded-bg: #1d2029;
+  --color-status-open: #047857;
+  --color-status-open-bg: #d1fae5;
+  --color-status-review: #c2410c;
+  --color-status-review-bg: #ffedd5;
+  --color-status-completed: #1d4ed8;
+  --color-status-completed-bg: #dbeafe;
+  --color-status-expired: #52525b;
+  --color-status-expired-bg: #e4e4e7;
+  --color-status-refunded: #52525b;
+  --color-status-refunded-bg: #f4f4f5;
 
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
+  --radius-sm: 1rem;
+  --radius-md: 1.5rem;
+  --radius-lg: 2rem;
+  --radius-xl: 3rem;
+  --radius-pill: 9999px;
 
   --text-caption: 0.8125rem;
-  --text-caption--line-height: 1.25rem;
-  --text-body: 0.9375rem;
-  --text-body--line-height: 1.5rem;
-  --text-title: 1.25rem;
-  --text-title--line-height: 1.75rem;
-  --text-display: 2rem;
-  --text-display--line-height: 2.5rem;
+  --text-caption--line-height: 1.4;
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-title: 1.5rem;
+  --text-title--line-height: 1.3;
+  --text-display: 5rem;
+  --text-display--line-height: 1.1;
 
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
+:root {
+  color-scheme: light;
+}
+
+input,
+select,
+textarea {
+  color-scheme: light;
+}
+
 body {
-  background:
-    radial-gradient(1200px 500px at 50% -200px, rgb(124 92 255 / 0.12), transparent),
-    var(--color-canvas);
+  background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  letter-spacing: -0.03em;
+}
+
+.btn-aura {
+  background-image: linear-gradient(135deg, #2a81ff 0%, #7c3aed 100%);
+  box-shadow: 0 10px 24px -8px rgb(42 129 255 / 0.55);
+}
+
+.btn-aura:hover {
+  box-shadow: 0 14px 30px -8px rgb(124 58 237 / 0.6);
+}
+
+.glass {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow:
+    inset 0 0.5px 0 rgb(255 255 255 / 0.9),
+    0 20px 40px -24px rgb(29 29 31 / 0.18);
+}
+
+.hero-aura {
+  background:
+    radial-gradient(640px 320px at 85% 0%, rgb(42 129 255 / 0.16), transparent 70%),
+    radial-gradient(520px 300px at 0% 100%, rgb(255 122 89 / 0.14), transparent 70%), #ffffffb3;
 }
 
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -59,6 +101,28 @@ body {
   }
 }
 
+@keyframes shimmer {
+  from {
+    background-position: -200px 0;
+  }
+  to {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
 .fade-in {
-  animation: fade-in 280ms ease-out both;
+  animation: fade-in 380ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f1edec 0%, #ffffff 50%, #f1edec 100%);
+  background-size: 200px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in,
+  .skeleton {
+    animation: none;
+  }
 }

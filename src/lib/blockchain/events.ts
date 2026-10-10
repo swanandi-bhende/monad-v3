@@ -1,8 +1,8 @@
 import { decodeEventLog, type Abi, type Address, type Log } from "viem";
 import { getBlock, getPublicClient } from "wagmi/actions";
 import { wagmiConfig } from "@/lib/blockchain/wagmi";
-import { CREDIBILITY_ABI, PROOFBOUNTY_ABI } from "@/lib/contracts/abi";
-import { getCredibilityAddress, getProofBountyAddress } from "@/lib/contracts/addresses";
+import { GIGACHAD_ABI } from "@/lib/contracts/abi";
+import { getEscrowAddress } from "@/lib/contracts/addresses";
 import { env } from "@/lib/config/env";
 import type { ChainEvent } from "@/types/event";
 
@@ -11,12 +11,13 @@ const PARALLEL = 3;
 const RETRY_DELAYS_MS = [1000, 2000, 4000, 8000];
 const MAX_RANGES_PER_SYNC = 600;
 const RECENT_FALLBACK_BLOCKS = RANGE * 20;
-const STORAGE_PREFIX = "proofbounty:events:v1:";
+const STORAGE_PREFIX = "gigachad:events:v2:";
 
 type Cache = { lastBlock: number; events: ChainEvent[] };
+type Decoded = Omit<ChainEvent, "timestamp">;
 
 function cacheKey() {
-  return `${STORAGE_PREFIX}${getProofBountyAddress()}:${getCredibilityAddress()}`;
+  return `${STORAGE_PREFIX}${getEscrowAddress()}`;
 }
 
 function loadCache(key: string): Cache | null {
@@ -32,22 +33,7 @@ function saveCache(key: string, cache: Cache) {
   try {
     window.localStorage.setItem(key, JSON.stringify(cache));
   } catch {
-    // Storage can be full or disabled; the index still works in memory for this session.
-  }
-}
-
-function decodeLog(log: Log, credibilityAddress: Address) {
-  const abi =
-    log.address.toLowerCase() === credibilityAddress.toLowerCase()
-      ? CREDIBILITY_ABI
-      : PROOFBOUNTY_ABI;
-  try {
-    return decodeEventLog({ abi: abi as Abi, data: log.data, topics: log.topics }) as {
-      eventName: string;
-      args?: unknown;
-    };
-  } catch {
-    return null;
+    // Storage is full or disabled. The index still works for this session.
   }
 }
 
@@ -71,21 +57,31 @@ function titleFromMetadata(raw: string) {
   }
 }
 
-async function fetchRange(from: number, to: number): Promise<Omit<ChainEvent, "timestamp">[]> {
+function decodeLog(log: Log) {
+  try {
+    return decodeEventLog({ abi: GIGACHAD_ABI as Abi, data: log.data, topics: log.topics }) as {
+      eventName: string;
+      args?: unknown;
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function fetchRange(from: number, to: number): Promise<Decoded[]> {
   const client = getPublicClient(wagmiConfig);
   if (!client) throw new Error("No Monad RPC client is available.");
-  const credibilityAddress = getCredibilityAddress();
   const logs = await withRetry(() =>
     client.getLogs({
-      address: [getProofBountyAddress(), credibilityAddress],
+      address: getEscrowAddress(),
       fromBlock: BigInt(from),
       toBlock: BigInt(to),
     }),
   );
 
-  const events: Omit<ChainEvent, "timestamp">[] = [];
+  const events: Decoded[] = [];
   for (const log of logs) {
-    const decoded = decodeLog(log, credibilityAddress);
+    const decoded = decodeLog(log);
     if (!decoded || !log.blockNumber || !log.transactionHash || log.logIndex === null) continue;
     const args = (decoded.args ?? {}) as Record<string, unknown>;
     const base = {
@@ -113,13 +109,24 @@ async function fetchRange(from: number, to: number): Promise<Omit<ChainEvent, "t
           submissionIndex: Number(args.submissionIndex),
         });
         break;
+      case "WorkReviewed":
+        events.push({
+          ...base,
+          kind: "reviewed",
+          actor: args.reviewer as Address,
+          amount: String(args.reward),
+          reviewNumber: Number(args.reviewNumber),
+          feedback: String(args.feedback),
+        });
+        break;
       case "WinnerSelected":
         events.push({
           ...base,
           kind: "winner",
           actor: args.winner as Address,
           submissionIndex: Number(args.submissionIndex),
-          amount: String(args.reward),
+          amount: String(args.winnerAmount),
+          fee: String(args.feeAmount),
         });
         break;
       case "BountyRefunded":
@@ -127,16 +134,7 @@ async function fetchRange(from: number, to: number): Promise<Omit<ChainEvent, "t
           ...base,
           kind: "refunded",
           actor: args.creator as Address,
-          amount: String(args.reward),
-        });
-        break;
-      case "SignalMarked":
-        events.push({
-          ...base,
-          kind: "credibility",
-          actor: args.voter as Address,
-          submissionIndex: Number(args.submissionIndex),
-          signal: Number(args.signal) === 1 ? "credible" : "low_quality",
+          amount: String(args.amount),
         });
         break;
     }
@@ -144,7 +142,7 @@ async function fetchRange(from: number, to: number): Promise<Omit<ChainEvent, "t
   return events;
 }
 
-async function withTimestamps(events: Omit<ChainEvent, "timestamp">[]): Promise<ChainEvent[]> {
+async function withTimestamps(events: Decoded[]): Promise<ChainEvent[]> {
   const blockNumbers = [...new Set(events.map((event) => event.blockNumber))];
   const timestamps = new Map<number, number>();
   await Promise.all(
@@ -168,11 +166,10 @@ export async function syncChainEvents(): Promise<ChainEvent[]> {
 
   const head = Number(await client.getBlockNumber());
   const key = cacheKey();
-  const cached = loadCache(key);
-  const startBlock = env.proofBountyDeployBlock ?? Math.max(0, head - RECENT_FALLBACK_BLOCKS);
-  let cache: Cache = cached ?? { lastBlock: startBlock - 1, events: [] };
-
+  const startBlock = env.escrowDeployBlock ?? Math.max(0, head - RECENT_FALLBACK_BLOCKS);
+  let cache: Cache = loadCache(key) ?? { lastBlock: startBlock - 1, events: [] };
   let fetchedRanges = 0;
+
   while (cache.lastBlock < head && fetchedRanges < MAX_RANGES_PER_SYNC) {
     const batch: { from: number; to: number }[] = [];
     for (let i = 0; i < PARALLEL; i++) {

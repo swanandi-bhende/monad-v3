@@ -1,7 +1,12 @@
-export const PROOFBOUNTY_ABI = [
+export const GIGACHAD_ABI = [
   {
     "type": "constructor",
     "inputs": [
+      {
+        "name": "treasury_",
+        "type": "address",
+        "internalType": "address"
+      },
       {
         "name": "reviewPeriod_",
         "type": "uint64",
@@ -9,6 +14,58 @@ export const PROOFBOUNTY_ABI = [
       }
     ],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "BPS",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "MAX_REVIEW_SLOTS",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint8",
+        "internalType": "uint8"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "MAX_SCORE",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint8",
+        "internalType": "uint8"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "REVIEWER_BPS",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -37,6 +94,26 @@ export const PROOFBOUNTY_ABI = [
         "internalType": "uint256"
       },
       {
+        "name": "feeAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "reviewPool",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "reviewPaid",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "winnerAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
         "name": "deadline",
         "type": "uint64",
         "internalType": "uint64"
@@ -47,9 +124,19 @@ export const PROOFBOUNTY_ABI = [
         "internalType": "uint64"
       },
       {
+        "name": "reviewSlots",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "reviewCount",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
         "name": "status",
         "type": "uint8",
-        "internalType": "enum ProofBounty.Status"
+        "internalType": "enum GigAChad.Status"
       },
       {
         "name": "winner",
@@ -97,6 +184,11 @@ export const PROOFBOUNTY_ABI = [
         "internalType": "uint64"
       },
       {
+        "name": "reviewSlots",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
         "name": "metadata",
         "type": "string",
         "internalType": "string"
@@ -113,6 +205,44 @@ export const PROOFBOUNTY_ABI = [
   },
   {
     "type": "function",
+    "name": "feeBps",
+    "inputs": [
+      {
+        "name": "reward",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
+    "name": "getScoreTotals",
+    "inputs": [
+      {
+        "name": "bountyId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getSubmissions",
     "inputs": [
       {
@@ -125,7 +255,7 @@ export const PROOFBOUNTY_ABI = [
       {
         "name": "",
         "type": "tuple[]",
-        "internalType": "struct ProofBounty.Submission[]",
+        "internalType": "struct GigAChad.Submission[]",
         "components": [
           {
             "name": "submitter",
@@ -143,6 +273,30 @@ export const PROOFBOUNTY_ABI = [
             "internalType": "uint64"
           }
         ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "hasReviewed",
+    "inputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
       }
     ],
     "stateMutability": "view"
@@ -193,6 +347,29 @@ export const PROOFBOUNTY_ABI = [
   },
   {
     "type": "function",
+    "name": "submitReview",
+    "inputs": [
+      {
+        "name": "bountyId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "scores",
+        "type": "uint8[]",
+        "internalType": "uint8[]"
+      },
+      {
+        "name": "feedback",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "submitWork",
     "inputs": [
       {
@@ -208,6 +385,19 @@ export const PROOFBOUNTY_ABI = [
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "treasury",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "event",
@@ -238,10 +428,34 @@ export const PROOFBOUNTY_ABI = [
         "internalType": "uint256"
       },
       {
+        "name": "feeAmount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "reviewPool",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "winnerAmount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
         "name": "deadline",
         "type": "uint64",
         "indexed": false,
         "internalType": "uint64"
+      },
+      {
+        "name": "reviewSlots",
+        "type": "uint8",
+        "indexed": false,
+        "internalType": "uint8"
       },
       {
         "name": "metadata",
@@ -269,7 +483,7 @@ export const PROOFBOUNTY_ABI = [
         "internalType": "address"
       },
       {
-        "name": "reward",
+        "name": "amount",
         "type": "uint256",
         "indexed": false,
         "internalType": "uint256"
@@ -300,10 +514,53 @@ export const PROOFBOUNTY_ABI = [
         "internalType": "address"
       },
       {
+        "name": "winnerAmount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "feeAmount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "WorkReviewed",
+    "inputs": [
+      {
+        "name": "bountyId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "reviewer",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "reviewNumber",
+        "type": "uint8",
+        "indexed": false,
+        "internalType": "uint8"
+      },
+      {
         "name": "reward",
         "type": "uint256",
         "indexed": false,
         "internalType": "uint256"
+      },
+      {
+        "name": "feedback",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
       }
     ],
     "anonymous": false
@@ -341,7 +598,22 @@ export const PROOFBOUNTY_ABI = [
   },
   {
     "type": "error",
+    "name": "AlreadyReviewed",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "BountyNotFound",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ConflictOfInterest",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CreatorCannotReview",
     "inputs": []
   },
   {
@@ -351,7 +623,7 @@ export const PROOFBOUNTY_ABI = [
   },
   {
     "type": "error",
-    "name": "EmptyReference",
+    "name": "EmptyEvidence",
     "inputs": []
   },
   {
@@ -366,7 +638,17 @@ export const PROOFBOUNTY_ABI = [
   },
   {
     "type": "error",
+    "name": "InvalidReviewSlots",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "InvalidReward",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidScore",
     "inputs": []
   },
   {
@@ -377,6 +659,16 @@ export const PROOFBOUNTY_ABI = [
   {
     "type": "error",
     "name": "InvalidToken",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidTreasury",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NoSubmissions",
     "inputs": []
   },
   {
@@ -401,7 +693,17 @@ export const PROOFBOUNTY_ABI = [
   },
   {
     "type": "error",
+    "name": "ReviewSlotsFull",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "ReviewWindowClosed",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ReviewWindowNotOpen",
     "inputs": []
   },
   {
@@ -417,54 +719,172 @@ export const PROOFBOUNTY_ABI = [
   },
   {
     "type": "error",
+    "name": "ScoreCountMismatch",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "SubmissionWindowClosed",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "SubmissionWindowOpen",
     "inputs": []
   }
 ] as const;
 
-export const CREDIBILITY_ABI = [
+export const TESTUSDC_ABI = [
   {
     "type": "constructor",
-    "inputs": [
-      {
-        "name": "bounty_",
-        "type": "address",
-        "internalType": "contract ProofBounty"
-      }
-    ],
+    "inputs": [],
     "stateMutability": "nonpayable"
   },
   {
     "type": "function",
-    "name": "bounty",
+    "name": "CLAIM_AMOUNT",
     "inputs": [],
     "outputs": [
       {
         "name": "",
-        "type": "address",
-        "internalType": "contract ProofBounty"
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "stateMutability": "view"
   },
   {
     "type": "function",
-    "name": "mark",
+    "name": "CLAIM_COOLDOWN",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "allowance",
     "inputs": [
       {
-        "name": "bountyId",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "owner",
+        "type": "address",
+        "internalType": "address"
       },
       {
-        "name": "submissionIndex",
+        "name": "spender",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
         "type": "uint256",
         "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "approve",
+    "inputs": [
+      {
+        "name": "spender",
+        "type": "address",
+        "internalType": "address"
       },
       {
-        "name": "signal",
+        "name": "value",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "balanceOf",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "claim",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "decimals",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
         "type": "uint8",
-        "internalType": "enum SubmissionCredibility.Signal"
+        "internalType": "uint8"
+      }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
+    "name": "lastClaimAt",
+    "inputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "mint",
+    "inputs": [
+      {
+        "name": "to",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "outputs": [],
@@ -472,56 +892,37 @@ export const CREDIBILITY_ABI = [
   },
   {
     "type": "function",
-    "name": "signalOf",
-    "inputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
+    "name": "name",
+    "inputs": [],
     "outputs": [
       {
         "name": "",
-        "type": "uint8",
-        "internalType": "enum SubmissionCredibility.Signal"
+        "type": "string",
+        "internalType": "string"
       }
     ],
     "stateMutability": "view"
   },
   {
     "type": "function",
-    "name": "tally",
-    "inputs": [
-      {
-        "name": "bountyId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "submissionIndex",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
+    "name": "symbol",
+    "inputs": [],
     "outputs": [
       {
-        "name": "credible",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
+        "name": "",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "totalSupply",
+    "inputs": [],
+    "outputs": [
       {
-        "name": "lowQuality",
+        "name": "",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -529,54 +930,203 @@ export const CREDIBILITY_ABI = [
     "stateMutability": "view"
   },
   {
-    "type": "event",
-    "name": "SignalMarked",
+    "type": "function",
+    "name": "transfer",
     "inputs": [
       {
-        "name": "bountyId",
-        "type": "uint256",
-        "indexed": true,
-        "internalType": "uint256"
+        "name": "to",
+        "type": "address",
+        "internalType": "address"
       },
       {
-        "name": "submissionIndex",
+        "name": "value",
         "type": "uint256",
-        "indexed": true,
         "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferFrom",
+    "inputs": [
+      {
+        "name": "from",
+        "type": "address",
+        "internalType": "address"
       },
       {
-        "name": "voter",
+        "name": "to",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "value",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "Approval",
+    "inputs": [
+      {
+        "name": "owner",
         "type": "address",
         "indexed": true,
         "internalType": "address"
       },
       {
-        "name": "signal",
-        "type": "uint8",
+        "name": "spender",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "value",
+        "type": "uint256",
         "indexed": false,
-        "internalType": "enum SubmissionCredibility.Signal"
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Transfer",
+    "inputs": [
+      {
+        "name": "from",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "to",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "value",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
       }
     ],
     "anonymous": false
   },
   {
     "type": "error",
-    "name": "AlreadyMarked",
-    "inputs": []
+    "name": "ClaimTooSoon",
+    "inputs": [
+      {
+        "name": "availableAt",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
   },
   {
     "type": "error",
-    "name": "InvalidSignal",
-    "inputs": []
+    "name": "ERC20InsufficientAllowance",
+    "inputs": [
+      {
+        "name": "spender",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "allowance",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "needed",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
   },
   {
     "type": "error",
-    "name": "OwnSubmission",
-    "inputs": []
+    "name": "ERC20InsufficientBalance",
+    "inputs": [
+      {
+        "name": "sender",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "balance",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "needed",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
   },
   {
     "type": "error",
-    "name": "SubmissionNotFound",
-    "inputs": []
+    "name": "ERC20InvalidApprover",
+    "inputs": [
+      {
+        "name": "approver",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ERC20InvalidReceiver",
+    "inputs": [
+      {
+        "name": "receiver",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ERC20InvalidSender",
+    "inputs": [
+      {
+        "name": "sender",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ERC20InvalidSpender",
+    "inputs": [
+      {
+        "name": "spender",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
   }
 ] as const;

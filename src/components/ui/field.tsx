@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 export const inputClass =
-  "text-body w-full rounded-md border border-line bg-canvas px-3 py-2 text-ink placeholder:text-muted/60 transition-colors focus:border-accent focus:outline-none disabled:opacity-50";
+  "text-body w-full rounded-lg border border-line bg-surface px-4 py-3 text-ink placeholder:text-muted/70 transition-colors hover:border-ink/25 focus:border-ink focus:outline-none focus:ring-4 focus:ring-accent/40 disabled:opacity-50";
 
 export function Field({
   label,
@@ -15,8 +15,8 @@ export function Field({
   children: ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
-      <label htmlFor={htmlFor} className="text-caption text-ink block font-medium">
+    <div className="space-y-2">
+      <label htmlFor={htmlFor} className="text-body text-ink block font-medium">
         {label}
       </label>
       {children}

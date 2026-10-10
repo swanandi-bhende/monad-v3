@@ -5,6 +5,7 @@ libs = ["lib"]
 test = "test"
 script = "script"
 solc = "0.8.28"
+via_ir = true
 chain_id = 10143
 remappings = ["@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/"]
 

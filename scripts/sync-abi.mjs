@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const contracts = [
-  { name: "ProofBounty", exportName: "PROOFBOUNTY_ABI" },
-  { name: "SubmissionCredibility", exportName: "CREDIBILITY_ABI" },
+  { name: "GigAChad", exportName: "GIGACHAD_ABI" },
+  { name: "TestUSDC", exportName: "TESTUSDC_ABI" },
 ];
 
 const sections = contracts.map(({ name, exportName }) => {

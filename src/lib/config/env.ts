@@ -31,16 +31,12 @@ export const env = {
     MONAD_TESTNET_RPC_URL,
     "NEXT_PUBLIC_MONAD_RPC_URL",
   ),
-  proofBountyAddress: readAddress(
-    process.env.NEXT_PUBLIC_PROOFBOUNTY_ADDRESS,
-    "NEXT_PUBLIC_PROOFBOUNTY_ADDRESS",
+  escrowAddress: readAddress(
+    process.env.NEXT_PUBLIC_GIGACHAD_ADDRESS,
+    "NEXT_PUBLIC_GIGACHAD_ADDRESS",
   ),
-  credibilityAddress: readAddress(
-    process.env.NEXT_PUBLIC_CREDIBILITY_ADDRESS,
-    "NEXT_PUBLIC_CREDIBILITY_ADDRESS",
-  ),
-  proofBountyDeployBlock: readBlock(
-    process.env.NEXT_PUBLIC_PROOFBOUNTY_DEPLOY_BLOCK,
-    "NEXT_PUBLIC_PROOFBOUNTY_DEPLOY_BLOCK",
+  escrowDeployBlock: readBlock(
+    process.env.NEXT_PUBLIC_GIGACHAD_DEPLOY_BLOCK,
+    "NEXT_PUBLIC_GIGACHAD_DEPLOY_BLOCK",
   ),
 };

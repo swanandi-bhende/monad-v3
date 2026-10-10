@@ -7,12 +7,12 @@ export function describeEvent(event: ChainEvent) {
     case "created":
       return `Bounty ${bounty} posted: ${event.title ?? "Untitled bounty"}`;
     case "submitted":
-      return `Submission received on ${bounty} from ${shortAddress(event.actor)}`;
+      return `Work submitted to ${bounty} by ${shortAddress(event.actor)}`;
+    case "reviewed":
+      return `Review submitted on ${bounty} by ${shortAddress(event.actor)}. ${formatReward(BigInt(event.amount ?? 0))} review reward paid`;
     case "winner":
       return `Winner selected on ${bounty}. ${formatReward(BigInt(event.amount ?? 0))} paid to ${shortAddress(event.actor)}`;
     case "refunded":
       return `${bounty} refunded to the creator: ${formatReward(BigInt(event.amount ?? 0))}`;
-    case "credibility":
-      return `${shortAddress(event.actor)} marked a submission on ${bounty} as ${event.signal === "credible" ? "credible" : "low quality"}`;
   }
 }

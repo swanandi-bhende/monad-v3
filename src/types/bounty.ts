@@ -5,11 +5,18 @@ export type BountyStatus = "open" | "under_review" | "completed" | "expired" | "
 
 export type SelectionMethod = "manual";
 
+export type RubricCriterion = { name: string; weight: number };
+
 export type BountyMetadata = {
   title: string;
   description: string;
   category: string;
   selectionMethod: SelectionMethod;
+  deliverables: string;
+  acceptanceCriteria: string;
+  submissionInstructions: string;
+  tools: string[];
+  rubric: RubricCriterion[];
 };
 
 export type Bounty = BountyMetadata & {
@@ -17,10 +24,19 @@ export type Bounty = BountyMetadata & {
   creator: Address;
   rewardToken: Address;
   rewardAmount: bigint;
+  feeAmount: bigint;
+  reviewPool: bigint;
+  reviewPaid: bigint;
+  winnerAmount: bigint;
   deadline: number;
   reviewEnd: number;
+  reviewSlots: number;
+  reviewCount: number;
   status: BountyStatus;
   winner?: Address;
 };
 
-export type BountyWithSubmissions = Bounty & { submissions: Submission[] };
+export type BountyWithSubmissions = Bounty & {
+  submissions: Submission[];
+  scoreTotals: bigint[];
+};
